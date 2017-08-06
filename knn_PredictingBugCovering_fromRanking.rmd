@@ -41,9 +41,9 @@ trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 ## Build model with KNN wiht cross validation from package CLASS
 ```{r knn.cv.class}
 #build model
-fitModel.cv <- knn.cv (train =trainingData, cl=trainingLabels, k=3, l=0, prob = FALSE, use.all=TRUE);
-fitModel.cv.df<-data.frame(fitModel.cv)
-CrossTable(x = trainingLabels, y=fitModel.cv.df[,1], prop.chisq = FALSE)
+fitModel.cv <- knn.cv(train =trainingData, cl=trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
+#fitModel.cv.df<-data.frame(fitModel.cv)
+#CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
  
 ```
 ##Compute the minimal ranking value that corresponded to the predicted bugCovering questions
@@ -94,4 +94,3 @@ hist(rankingList,main="Bug-covering ranking dist., knn caret repeatedcv, mean=1.
 #Caret produced more false positives than knn.cv from class package. I tried to fine tune it more,
 #but was not enough. The k value for Caret seems very high 15 t 23.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
