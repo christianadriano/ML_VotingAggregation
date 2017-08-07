@@ -34,30 +34,26 @@ summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"]
 summaryTable[,"thresholdVote"] <- as.numeric(unlist(summaryTable[,"thresholdVote"])); 
 
 #Select only the ranking as a feature to predict bugCovering
-summaryTable <- summaryTable[,c("bugCovering","rankingVote")];
+trainingData <- summaryTable[,c("bugCovering","rankingVote")];
 
-#Prepare explanatory variable (rankingVote) and target (bugCovering)
-trainingData <-data.frame(summaryTable);
-trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
-trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 ```
 
 ## Build model with KNN wiht cross validation from package CLASS
 ```{r knn.cv.class}
 #build model
-#fitModel.cv <- knn.cv(train =trainingData, cl=trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
-#fitModel.cv.df<-data.frame(fitModel.cv)
-#CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
+fitModel.cv <- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
+fitModel.cv.df<-data.frame(fitModel.cv)
+CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
  
 ```
 ##Compute the minimal ranking value that corresponded to the predicted bugCovering questions
 ```{r knn.cv.ranking}
-#trainingData$bugCovering <- as.factor(trainingData$bugCovering);
-#predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
-#rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
-#mean(rankingList)
-#max(rankingList)
-#hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES");
+trainingData$bugCovering <- as.factor(trainingData$bugCovering);
+predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
+rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
+mean(rankingList)
+max(rankingList)
+hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES");
 
 ```
 ### Using KNN from CARET package
