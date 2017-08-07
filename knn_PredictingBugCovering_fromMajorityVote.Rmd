@@ -17,7 +17,8 @@ library(ggplot2);
 
 ##The goal of the study
 <p>
-Evaluate the prediction based on the difference between number of YES votes and NO votes. For more detailed explanation, please see the <a href= >previous analysis</a> </p>
+Evaluate the prediction based on the difference between number of YES votes and NO votes. For more detailed explanation, please see the 
+<a href="http://rpubs.com/christian_adriano/knn_cv_ranking_buggy_codefragments">previous analysis</a> </p>
 
 <du>Whe study has two goals:
 <li>
