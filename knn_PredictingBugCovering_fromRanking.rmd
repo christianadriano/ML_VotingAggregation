@@ -15,12 +15,29 @@ library(caret);
 library(e1071)
 ```
 
-##Data preparation
+##The goal of the study
+<p>
+Making sense of a multiplce answers to one same question is challenging if one needs to extract some kind of consensus. The challenges relate to the different levels of skill, but also personal preferences. </p>
 
-#I need to guarantee that some examples (i.e., failing methods)
-#do not dominate the training or testing sets. To do that, I need to get a 
-#close to equal proportion of examples in both sets. I do that by 
-#scrambling the data.
+<p>In the case of my experiment, I asked workers if they believed that a code fragment was related to a unit test failure. Each question was asked to 20 different workers. Workers answered YES, NO, or I don´t know. </p>
+
+<p>After receiving all the answers for each code fragments, I was left with the challenge of using these answers to predict the code fragments that are most probability related to the failure. I labeled as "bug covering" the questions that were about code fragments that turned out to be related to the unit test failure.</p>
+
+<du>Whe study has two goals:
+<li>
+Train a machine learning algorithm that predicts whether a code fragment is related to a failure or not. For that, I originally devised different metrics. The metric that will explore in the following study consists of ranking the questions by the number of YES answers received. Questions that received the most number of YES answers are assigned ranking level 1.
+</li>
+
+<li> Compared CLASS and CARET implementations of k-nearest neighbor algorithm. Results showed that CLASS implementation produced fewer false positives than CARET. Note that this might result of overfitting of my use of CLASS configuration of knn.cv.
+</li>
+
+</du>
+
+##Data preparation
+<p>I need to guarantee that some examples (i.e., failing methods)
+do not dominate the training or testing sets. To do that, I need to get a 
+close to equal proportion of examples in both sets. I do that by 
+scrambling the data.</p>
 
 ```{r dataprep}
 
@@ -38,7 +55,10 @@ trainingData <- summaryTable[,c("bugCovering","rankingVote")];
 
 ```
 
-## Build model with KNN wiht cross validation from package CLASS
+#KNN from CLASS package
+<p> I chose knn.cv (cross validation) so I can minimize the risk of lucky selection of training and testing set. 
+<p> Cross validations is performed by leaving one out, however even when I set partition to 70/30 I obtained the same reaults.
+<p> I also run with differnt levels of  k=3,5,7,9, which produced the same results as well
 ```{r knn.cv.class}
 #build model
 fitModel.cv <- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
@@ -46,7 +66,7 @@ fitModel.cv.df<-data.frame(fitModel.cv)
 CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
  
 ```
-##Compute the minimal ranking value that corresponded to the predicted bugCovering questions
+<p>Compute the minimal ranking value that corresponded to the predicted bugCovering questions></p>
 ```{r knn.cv.ranking}
 trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
@@ -56,12 +76,12 @@ max(rankingList)
 hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES");
 
 ```
-### Using KNN from CARET package
-# https://cran.r-project.org/web/packages/caret/vignettes/caret.pdf
-# https://dataaspirant.com/2017/01/09/knn-implementation-r-using-caret-package/
 
-# I will do 5 repeats of 10-Fold CV. I will fit
-# a KNN model that evaluates 10 values of k
+#KNN from CARET package
+<p> https://cran.r-project.org/web/packages/caret/vignettes/caret.pdf
+<p> https://dataaspirant.com/2017/01/09/knn-implementation-r-using-caret-package/
+
+<p> I will do 5 repeats of 10-Fold CV. I will fit a KNN model that evaluates 10 values of k
 ```{r knn.caret.model, echo=FALSE}
 
 set.seed(1234)
@@ -82,7 +102,7 @@ confusionMatrix(data=bugCoveringPredicted,trainingData$bugCovering)
  
 
 ```
-##Compute the minimal ranking value that corresponded to the predicted bugCovering questions
+<p>Compute the minimal ranking value that corresponded to the predicted bugCovering questions
 ```{r knn.caret.ranking, echo=FALSE}
 df<-data.frame(bugCoveringPredicted)
 predictedBugCoveringList<-trainingData[df[,1]==TRUE,];
@@ -91,6 +111,7 @@ mean(rankingList)
 max(rankingList)
 hist(rankingList,main="Bug-covering ranking dist., knn caret repeatedcv, mean=1.52, max=2",xlab="ranking by number of YES's");
 ```
-#Caret produced more false positives than knn.cv from class package. I tried to fine tune it more,
-#but was not enough. The k value for Caret seems very high 15 t 23.
+#Conclusion
+<p>Caret produced more false positives than knn.cv from class package. I tried to fine tune it more, but was not enough. The k value for Caret seems very high 15 t 23. However, these differences might be due to my use of knn.cv to be overfitting.
+
 
