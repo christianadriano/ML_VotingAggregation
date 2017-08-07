@@ -1,13 +1,16 @@
 #compute all voting aggregations
+#RankingVote: ranks questions based on number of YES
+#MajorityVote: balance between number of YES and NO
+#ThresholdVote: above a certain number of YES
 
 
 computeMajorityVote<- function(summaryTable){
-  summaryTable["MajorityVote"] <- summaryTable$Yes.Count - summaryTable$No.Count;
+  summaryTable["majorityVote"] <- summaryTable$Yes.Count - summaryTable$No.Count;
   return(summaryTable);
 }
 
 computeThresholdVote<- function(summaryTable, threshold){
-  summaryTable["ThresholdVote"] <- summaryTable[,"Yes.Count"]>threshold;
+  summaryTable["thresholdVote"] <- summaryTable[,"Yes.Count"]>threshold;
   return(summaryTable);
 }
 
@@ -29,7 +32,7 @@ computeRanking <- function(summaryTable){
     
     selection <- rankQuestions(selection,labels);
     
-    summaryTable[selection$Question.ID+1,"ranking"]<-selection$ranking; 
+    summaryTable[selection$Question.ID+1,"rankingVote"]<-selection$rankingVote; 
   }
   
   return(summaryTable);
@@ -40,7 +43,7 @@ rankQuestions <- function(selection, labels){
   
   for(i in 1:length(labels[,2])){
     matchedRows <- which(selection$Yes.Count==labels[i,1]);  
-    selection[matchedRows,"ranking"]<-labels[i,2];
+    selection[matchedRows,"rankingVote"]<-labels[i,2];
   }
   
   return(selection);

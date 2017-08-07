@@ -49,8 +49,8 @@ testLabels <- as.data.frame(summaryTable[ind==2,"bugCovering"]);
 install.packages("class")
 library(class);
 
-#Select only the ranking as a feature to predict bugCovering
-summaryTable <- summaryTable[,c("bugCovering","ranking")];
+#Select only the rankingVote as a feature to predict bugCovering
+summaryTable <- summaryTable[,c("bugCovering","rankingVote")];
 
 fitModel <- knn(train =trainingData, test=testData, cl=trainingLabels[,1] , k=2);
 attributes(.Last.value)
@@ -72,6 +72,6 @@ fitModel
 fitFrame <- data.frame(fitModel)
 
 predictionFrame<-data.frame(fitModel.cv)
-mean(trainingData[predictionFrame[,1]==TRUE,"ranking"])
+mean(trainingData[predictionFrame[,1]==TRUE,"rankingVote"])
 trainingData[predictionFrame[,1]==TRUE,]
 predictionFrame[predictionFrame[,1]==TRUE,]

@@ -16,7 +16,7 @@ summaryTable <- runMain();
 set.seed(9850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
-summaryTable[,"ranking"] <- as.numeric(unlist(summaryTable[,"ranking"]));
+summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"]));
 
 ##################################################################
 #Build the KNN model
@@ -25,11 +25,11 @@ install.packages("class");
 library(class);
 
 #Select only the ranking as a feature to predict bugCovering
-summaryTable <- summaryTable[,c("bugCovering","ranking")];
+summaryTable <- summaryTable[,c("bugCovering","rankingVote")];
 
-#Prepare explanatory variable (ranking) and target (bugCovering)
+#Prepare explanatory variable (rankingVote) and target (bugCovering)
 trainingData <-data.frame(summaryTable);
-trainingData$ranking <- as.numeric(trainingData$ranking);
+trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
 trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 
 
@@ -58,7 +58,7 @@ predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
 rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
 mean(rankingList)
 max(rankingList)
-hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking");
+hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES's");
 
 ###################################################################################### 
 ### Using KNN from CARET package
@@ -76,11 +76,11 @@ set.seed(1234)
 
 trctrl <- trainControl(method = "repeatedcv", number=10, p=0.9, repeats = 5)
 
-trainingData$ranking <- as.numeric(trainingData$ranking);
+trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
 trainingData$bugCovering <- as.factor(trainingData$bugCovering);
-mean(trainingData$ranking);
+mean(trainingData$rankingVote);
 
-knn_fit <- train(bugCovering ~ ranking, data = trainingData, method = "knn",
+knn_fit <- train(bugCovering ~ rankingVote, data = trainingData, method = "knn",
                  trControl=trctrl,
                  preProcess = c("center", "scale"),
                  tuneLength = 10)
