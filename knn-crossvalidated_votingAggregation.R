@@ -2,6 +2,15 @@
 #Predict bug covering questions based on various values of 
 #the parameters in the aggregation methods
 
+install.packages("class");
+library(class);
+install.packages("gmodels");
+library(gmodels)
+install.packages("caret")
+library(caret)
+install.packages('e1071', dependencies=TRUE)
+library(e1071)
+
 #Obtain the data
 
 # Import data
@@ -16,58 +25,55 @@ summaryTable <- runMain();
 set.seed(9850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
-summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"]));
 
 ##################################################################
 #Build the KNN model
 
-install.packages("class");
-library(class);
-
 #Select only the ranking as a feature to predict bugCovering
-summaryTable <- summaryTable[,c("bugCovering","rankingVote")];
+trainingData <- summaryTable[,c("bugCovering","majorityVote")];
 
 #Prepare explanatory variable (rankingVote) and target (bugCovering)
-trainingData <-data.frame(summaryTable);
-trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
-trainingData$bugCovering <- as.factor(trainingData$bugCovering);
+trainingData <-data.frame(trainingData);
+trainingData$majorityVote <- as.numeric(trainingData$majorityVote);
 
 
 ######################################################################################
 #Using KNN from CLASS package
 
-fitModel.cv <- knn.cv (train =trainingData, cl=trainingLabels, k=19, l=0, prob = FALSE, use.all=TRUE);
+fitModel.cv <- knn.cv (train =trainingData, cl=trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
 
 #Evaluate model
 
-install.packages("gmodels");
-library(gmodels)
 
 fitModel.cv.df<-data.frame(fitModel.cv)
-CrossTable(x = trainingLabels, y=fitModel.cv.df[,1], prop.chisq = FALSE)
-#False Positives = 2
-#False Negatives = 6
-#True Positives = 19
-#True Negatives = 102
+CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
 
 plot(fitModel.cv)
-fitModel.cv
 
 trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
-rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
-mean(rankingList)
-max(rankingList)
-hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES's");
+predictedList <- as.numeric(unlist(predictedBugCoveringList[,2]));
+mean(predictedList)
+min(predictedList)
+
+#Plot metric distribution
+predictedList.df <- data.frame(predictedList);
+colnames(predictedList.df)<- c("votes");
+
+ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
+  geom_histogram(binwidth = 1,alpha=.5, position="identity")+
+  geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1) +
+  ggtitle("Distribution of votes for the questions categorized as bug covering, minimal vote=-2")+
+  labs(x="Majority vote values of questions categorized as bug-covering. Mininal vote=-2, mean=3.36", 
+       y="Frequency");
+
 
 ###################################################################################### 
 ### Using KNN from CARET package
 ## https://cran.r-project.org/web/packages/caret/vignettes/caret.pdf
 ## https://dataaspirant.com/2017/01/09/knn-implementation-r-using-caret-package/
-install.packages("caret")
-library(caret)
-install.packages('e1071', dependencies=TRUE)
-library(e1071)
+
 
 # I will do 5 repeats of 10-Fold CV. I will fit
 # a KNN model that evaluates 10 values of k
