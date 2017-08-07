@@ -3,7 +3,7 @@
 
 loadAnswers<- function(fileName){
   
-  setwd("C://Users//chris//OneDrive//Documentos//GitHub//randomForestWorkerConfidenceDifficulty//");
+  setwd("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//");
   
   data_all <- read.csv(fileName,header = TRUE,sep=",");
   
