@@ -1,5 +1,5 @@
 ---
-title: "K-Nearest Neighbor - Predicting Bug Covering by Majority Vote"
+title: "K-Nearest Neighbor - Predicting Bug Covering by Majority Voting"
 author: "Christian Medeiros Adriano"
 date: "August 7, 2017"
 output: html_document
@@ -92,7 +92,7 @@ ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
   geom_histogram(binwidth = 1,alpha=.5, position="identity")+
   geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
              color="red", linetype="dashed", size=1) +
-  ggtitle("Distribution of votes for the questions categorized as bug covering, minimal vote=-2")+
+  ggtitle("Distribution of votes for the questions categorized as bug covering.")+
   labs(x="Majority vote values of questions categorized as bug-covering. Mininal vote=-2, mean=3.36", 
        y="Frequency");
 
