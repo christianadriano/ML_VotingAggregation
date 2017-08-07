@@ -1,5 +1,5 @@
 ---
-title: "K-NearestNeighbor - Predicting Bug Covering by Ranking"
+title: "K-Nearest Neighbor - Predicting Bug Covering by Ranking"
 author: "Christian Medeiros Adriano"
 date: "August 6, 2017"
 output: html_document
@@ -13,6 +13,7 @@ library(class);
 library(gmodels);
 library(caret);
 library(e1071)
+library(ggplot2);
 ```
 
 ##The goal of the study
@@ -62,18 +63,45 @@ trainingData <- summaryTable[,c("bugCovering","rankingVote")];
 ```{r knn.cv.class}
 #build model
 fitModel.cv <- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
-fitModel.cv.df<-data.frame(fitModel.cv)
-CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
- 
+
 ```
-<p>Compute the minimal ranking value that corresponded to the predicted bugCovering questions></p>
-```{r knn.cv.ranking}
+
+##Testing the model
+```{r test.knn.cv.class, include=FALSE}
+fitModel.cv.df<-data.frame(fitModel.cv);
+CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
+```
+
+##Estimating the metric
+<p>Discover the minimal ranking value that would have predicted the same bug Covering questions</p>
+```{r knn.cv.metric, echo=FALSE}
 trainingData$bugCovering <- as.factor(trainingData$bugCovering);
 predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
-rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
-mean(rankingList)
-max(rankingList)
-hist(rankingList,main="Bug-covering ranking dist., k=3, 5 or 7, knn Class, mean=1.71 ",xlab="ranking by number of YES");
+predictedList <- as.numeric(unlist(predictedBugCoveringList[,2]));
+```
+
+<p>Mean ranking vote of the questions categorized as bug covering:</p>
+```{r knn.cv.mean, echo=FALSE}
+mean(predictedList) #mean vote
+```
+
+<p>Maximum ranking vote of the questions categorized as bug covering:</p>
+```{r knn.cv.minimal, echo=FALSE}
+min(predictedList) #minimal vote
+```
+
+##Plot metric distribution
+```{r plot, include=FALSE}
+predictedList.df <- data.frame(predictedList);
+colnames(predictedList.df)<- c("votes");
+ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
+  geom_histogram(binwidth = 1,alpha=.5, position="identity")+
+  geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1) +
+  ggtitle("Distribution of votes for the questions categorized as bug covering")+
+  labs(x="Ranking vote of the questions categorized as bug-covering. Mininal vote=3, mean=1.71", 
+       y="Frequency");
+
 
 ```
 <p></p>
@@ -119,6 +147,9 @@ mean(rankingList)
 max(rankingList)
 hist(rankingList,main="Bug-covering ranking dist., knn caret repeatedcv, mean=1.52, max=2",xlab="ranking by number of YES's");
 ```
+
+<p>By the distribution of ranking outcomes, we can note that the metric value for Ranking vote has to be larger or equal to 3 (three) in order predict bug-covering questions.</p>
+
 <p></p>
 
 ## Conclusions
