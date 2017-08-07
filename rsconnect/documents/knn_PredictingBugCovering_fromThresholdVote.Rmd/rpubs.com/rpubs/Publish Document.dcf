@@ -1,0 +1,8 @@
+name: Publish Document
+title:
+account: rpubs
+server: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/297540/1203f92d7786416b965c483cc722132b
+bundleId: https://api.rpubs.com/api/v1/document/297540/1203f92d7786416b965c483cc722132b
+url: http://rpubs.com/christian_adriano/297540
+when: 1502121344.67639

@@ -30,11 +30,11 @@ summaryTable <- summaryTable[order(g),];
 #Build the KNN model
 
 #Select only the ranking as a feature to predict bugCovering
-trainingData <- summaryTable[,c("bugCovering","majorityVote")];
+trainingData <- summaryTable[,c("bugCovering","Yes.Count")];
 
 #Prepare explanatory variable (rankingVote) and target (bugCovering)
 trainingData <-data.frame(trainingData);
-trainingData$majorityVote <- as.numeric(trainingData$majorityVote);
+trainingData$Yes.Count <- as.numeric(trainingData$Yes.Count);
 
 
 ######################################################################################
@@ -64,8 +64,8 @@ ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
   geom_histogram(binwidth = 1,alpha=.5, position="identity")+
   geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
              color="red", linetype="dashed", size=1) +
-  ggtitle("Distribution of votes for the questions categorized as bug covering, minimal vote=-2")+
-  labs(x="Majority vote values of questions categorized as bug-covering. Mininal vote=-2, mean=3.36", 
+  ggtitle("Distribution of votes for the questions categorized as bug covering")+
+  labs(x="Threshold vote values of questions categorized as bug-covering. Mininal vote=6, mean=9.41", 
        y="Frequency");
 
 
