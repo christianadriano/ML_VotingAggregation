@@ -1,0 +1,103 @@
+---
+title: "K-Nearest Neighbor - Predicting Bug Covering by Majority Vote"
+author: "Christian Medeiros Adriano"
+date: "August 7, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
+summaryTable <- runMain();
+
+library(class);
+library(gmodels);
+library(ggplot2);
+
+```
+
+##The goal of the study
+<p>
+Evaluate the prediction based on the difference between number of YES votes and NO votes. For more detailed explanation, please see the <a href= >previous analysis</a> </p>
+
+<du>Whe study has two goals:
+<li>
+Train a machine learning algorithm that predicts whether a code fragment is related to a failure or not. For that, I originally devised different metrics. The metric that will explore in the following study consists of Majority vote between YES and NO answers.
+</li>
+
+</du>
+
+
+
+```{r dataprep, include=FALSE}
+##Data preparation
+#I need to guarantee that some examples (i.e., failing methods)
+#do not dominate the training or testing sets. To do that, I need to get a 
+#close to equal proportion of examples in both sets. I do that by 
+#scrambling the data.
+  
+set.seed(9850);
+g<- runif((nrow(summaryTable))); #generates a random distribution
+summaryTable <- summaryTable[order(g),];#reorder the rows based on a random index
+
+#convert columns to numeric
+summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); 
+
+#Select only the majorityVote as a feature to predict bugCovering
+trainingData <- summaryTable[,c("bugCovering","majorityVote")];
+
+```
+
+## Building the model 
+<p> I chose knn.cv (cross validation) so I can minimize the risk of lucky selection of training and testing set. 
+<p> Cross validations was performed by leaving one out
+```{r knn.cv.class}
+#build model
+fitModel.cv <- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob = FALSE, use.all=TRUE);
+ 
+```
+<p> I have also run with differnt levels of  k=3,5,7,9, which produced similar results.
+
+##Testing the model
+```{r test.knn.cv.class, echo=FALSE}
+fitModel.cv.df<-data.frame(fitModel.cv);
+CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE);
+```
+
+##Estimating the metric
+<p>Discover the minimal majority vote value that would have predicted the same bug Covering questions</p>
+```{r knn.cv.metric, echo=FALSE}
+trainingData$bugCovering <- as.factor(trainingData$bugCovering);
+predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
+predictedList <- as.numeric(unlist(predictedBugCoveringList[,2]));
+```
+
+<p>Mean majority vote of the questions categorized as bug covering:</p>
+```{r knn.cv.mean, echo=FALSE}
+mean(predictedList) #mean vote
+```
+
+<p>Minimal majority vote of the questions categorized as bug covering:</p>
+```{r knn.cv.minimal, echo=FALSE}
+min(predictedList) #minimal vote
+```
+
+##Plot metric distribution
+```{r plot, echo=FALSE}
+
+predictedList.df <- data.frame(predictedList);
+colnames(predictedList.df)<- c("votes");
+
+ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
+  geom_histogram(binwidth = 1,alpha=.5, position="identity")+
+  geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
+             color="red", linetype="dashed", size=1) +
+  ggtitle("Distribution of votes for the questions categorized as bug covering, minimal vote=-2")+
+  labs(x="Majority vote values of questions categorized as bug-covering. Mininal vote=-2, mean=3.36", 
+       y="Frequency");
+
+```
+<p></p>
+
+<p>By the distribution of majority vote outcomes values, we can note that the metric value for Majority vote has to be larger or equal to -2 (minus two) in order predict bug-covering questions.</p>
+
+<br><br>
