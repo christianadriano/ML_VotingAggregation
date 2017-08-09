@@ -23,7 +23,7 @@ summaryTable <- runMain();
 #close to equal proportion of examples in both sets
 
 #Scramble the dataset before extracting the training set.
-set.seed(9850);
+set.seed(8850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
 
@@ -50,6 +50,7 @@ nb.pred <- predict(nb.model, data = testingData);
 prediction.df<- data.frame(nb.pred);
 CrossTable(x=testingData$bugCovering, y=prediction.df$class, prop.chisq=FALSE);
 
+
 length(testingData$bugCovering)
 length(prediction.df$class)
 
@@ -59,7 +60,7 @@ length(prediction.df$class)
 install.packages('ElemStatLearn')
 library('ElemStatLearn')
 library("klaR")
-library("caret")
+library(caret)
 
 sub = sample(nrow(summaryTable), floor(nrow(summaryTable) * 1))
 train = summaryTable[sub,]
@@ -74,12 +75,13 @@ yTest = as.factor(test$bugCovering);
 xS = summaryTable[,"rankingVote"]
 yS = data.frame(summaryTable[,"bugCovering"]);
 
-model = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=10))
+model = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=5))
 
 predictted<-predict(model$finalModel,xS);
 predictted.df <- data.frame(predictted)
 CrossTable(predictted.df$class,yS$bugCovering)
-
+confusionMatrix(predictted.df$class,yS$bugCovering)
+                 
 #PREDICTION   ACTUAL
 #           FALSE TRUE
 #FALSE        98   10
