@@ -1,0 +1,70 @@
+---
+title: "Naive Bayes Classifier - Predicting Bug Covering by Ranking"
+author: "Christian Medeiros Adriano"
+date: "August 9, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
+summaryTable <- runMain();
+
+library(class);
+library(gmodels);
+library(caret);
+library(e1071)
+```
+
+##The goal of the study
+<p>
+Evaluate the bug prediction based on a ranking YES votes. For more detailed explanation, please see the 
+<a href="http://rpubs.com/christian_adriano/knn_cv_ranking_buggy_codefragments">previous analysis</a> </p>
+
+ 
+
+##Data preparation
+<p>I need to guarantee that some examples (i.e., failing methods)
+do not dominate the training or testing sets. To do that, I need to get a 
+close to equal proportion of examples in both sets. I do that by 
+scrambling the data.</p>
+
+```{r dataprep}
+
+set.seed(9850);
+g<- runif((nrow(summaryTable))); #generates a random distribution
+summaryTable <- summaryTable[order(g),];#reorder the rows based on a random index
+```
+
+```{r naiveBayes.data.ranking, include=FALSE}
+sub = sample(nrow(summaryTable), floor(nrow(summaryTable) * 1))
+train = summaryTable[sub,]
+test = summaryTable[-sub,]
+
+xTrain = train[,"rankingVote"];
+yTrain = as.factor(train$bugCovering);
+
+xTest = test[,"rankingVote"]
+yTest = as.factor(test$bugCovering);
+
+xS = summaryTable[,"rankingVote"]
+yS = data.frame(summaryTable[,"bugCovering"]);
+
+```
+
+# Build the model
+<i> nb.model = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=10));</i>
+```{r naiveBayes.model.ranking, include=FALSE}
+nb.model = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=10));
+```
+
+# Test the model
+```{r test.knn.cv.class, echo=FALSE}
+nb.pred<-predict(nb.model$finalModel,xS);
+nb.pred.df <- data.frame(nb.pred);
+confusionMatrix(nb.pred.df$class,yS$bugCovering);
+```
+
+## Conclusions
+<p>Compared with k-nearest neighbor, Naive Bayes produced more false negative than the k-nearest neighbor with cross validation from package CLASS. Naive Baives produced the same results as KNN from CARET package. </p>
+
+<br><br>
