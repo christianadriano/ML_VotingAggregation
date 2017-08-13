@@ -1,14 +1,14 @@
-#K-Nearest Neighbor KNN
+#Naive Bayes
 #Predict bug covering questions based on various values of 
 #the parameters in the aggregation methods
 
-install.packages("class");
+install.packages(class);
 library(class);
-install.packages("gmodels");
+install.packages(gmodels);
 library(gmodels)
-install.packages('e1071', dependencies=TRUE)
+install.packages(e1071, dependencies=TRUE)
 library(e1071)
-install.packages("klaR")
+install.packages(klaR)
 library(klaR)
 
 #Obtain the data
@@ -57,9 +57,9 @@ length(prediction.df$class)
 ############################################################################################
 # Naive Bayes using CARET
 
-install.packages('ElemStatLearn')
-library('ElemStatLearn')
-library("klaR")
+install.packages(ElemStatLearn)
+library(ElemStatLearn)
+library(klaR)
 library(caret)
 
 sub = sample(nrow(summaryTable), floor(nrow(summaryTable) * 1))
@@ -75,12 +75,13 @@ yTest = as.factor(test$bugCovering);
 xS = summaryTable[,"rankingVote"]
 yS = data.frame(summaryTable[,"bugCovering"]);
 
-model = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=5))
+nb.fit = train(xTrain,yTrain,'nb',trControl=trainControl(method='cv',number=5))
 
-predictted<-predict(model$finalModel,xS);
-predictted.df <- data.frame(predictted)
-CrossTable(predictted.df$class,yS$bugCovering)
-confusionMatrix(predictted.df$class,yS$bugCovering)
+predictted<-predict(nb.fit$finalModel,xS);
+summary(predictted)
+predictted.df <- data.frame(predictted);
+CrossTable(predictted.df$class,yS$bugCovering);
+confusionMatrix(predictted.df$class,yS$bugCovering);
                  
 #PREDICTION   ACTUAL
 #           FALSE TRUE
