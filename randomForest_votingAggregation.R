@@ -1,5 +1,6 @@
 
-# Random Forest to evaluate different models to predict bug-covering questions
+#Random Forest using CARET package
+#goal: evaluate different models to predict bug-covering questions
 ## Model-1 based on majority votin
 ## Model-2 based on threshold of number of YES answers
 ## Model-3 based on ranking of number of YES answers
@@ -63,3 +64,27 @@ text(fit, use.n = TRUE, all=TRUE, cex=1);
 #ranking higher than 2.5 implies non-bug. 
 #Interpret these results from summary
 #Run the decision tree for majority and threshold
+
+######################################################################
+#RANDOM FOREST USING CARET package
+
+install.packages(ElemStatLearn)
+library(ElemStatLearn)
+library(klaR)
+library(caret)
+
+#To compute Area Under the Curve and
+myControl <- trainControl(
+  method = "repeatcv",
+  number = 10,
+  repeats = 5,
+  summaryFunction = twoClassSummary,
+  classProbs = TRUE, # IMPORTANT!
+  verboseIter = TRUE
+)
+
+model <- train(bugCovering ~ .,
+               tuneLength =4 ,
+               data = wine, method = "ranger",
+               trControl = myControl,
+)
