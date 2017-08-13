@@ -43,16 +43,17 @@ yTest = as.factor(test$bugCovering);
 xS = summaryTable[,"rankingVote"]
 yS = data.frame(summaryTable[,"bugCovering"]);
 
-#To compute Area Under the Curve
+#To compute Area Under the Curve and
 myControl <- trainControl(
-  method = "cv",
+  method = "repeatcv",
   number = 10,
+  repeats = 5,
   summaryFunction = twoClassSummary,
   classProbs = TRUE, # IMPORTANT!
   verboseIter = TRUE
 )
 
-model <- glm(bugCovering ~ rankingVote, family = binomial(link = "logit"), train)
+model<- train(bugCovering ~ rankingVote,Sonar, method="glm", trControl=myControl);
 
 p <- predict(model, test, type = "response")
 colAUC(p,test[["bugCovering"]],plotROC=TRUE)
