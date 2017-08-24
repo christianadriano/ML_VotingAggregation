@@ -62,12 +62,9 @@ kFoldControl <- trainControl(
 trControl=trainControl(
     method='cv',
     number=5,
-   
-  classProbs = TRUE, # IMPORTANT! 
-   savePredictions = TRUE,
-   summaryFunction = twoClassSummary
-
-       );
+    classProbs = TRUE,
+    summaryFunction = twoClassSummary
+  );
 
 #######################
 # Generate each model #
