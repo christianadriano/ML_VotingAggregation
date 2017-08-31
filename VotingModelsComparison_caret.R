@@ -35,16 +35,6 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
-
-# sub = sample(nrow(summaryTable), floor(nrow(summaryTable) * 1))
-# train = summaryTable[sub,]
-# test = summaryTable[-sub,]
-# 
-# xTrain = train[,"rankingVote"]
-# yTrain = as.factor(train$bugCovering)
-# 
-# nb.fit = train(bugCoveringLabels ~ rankingVote,summaryTable,'nb',trControl=trainControl(method='cv',number=5))
-
 # Create custom indices: myFolds
 #Guarantees that we are going to use the exact 
 #same datasets for all models
@@ -66,9 +56,9 @@ kFoldControl <- trainControl(
 ##############
 # Naive Bayes
 
-NB_model<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="nb", trControl=kFoldControl);
-NB_model
+nb<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="nb", trControl=kFoldControl);
 
+#nb
 # usekernel  ROC        Sens       Spec     
 # FALSE      0.7546970  0.9031409  0.5664596
 # TRUE      0.7534538  0.9270484  0.5095109
@@ -76,9 +66,9 @@ NB_model
 ######
 # KNN
 
-KNN_model <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="knn", trControl=kFoldControl);
-KNN_model
+knn <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="knn", trControl=kFoldControl);
 
+#knn
 # k  ROC        Sens       Spec     
 # 5  0.8290137  0.9778947  0.1340909
 
@@ -86,14 +76,20 @@ KNN_model
 # Random Forest
 
 
-RF_model<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="rf", trControl=kFoldControl);
-RF_model
+rf<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="rf", trControl=kFoldControl);
+
+#rf
+# ROC        Sens       Spec     
+# 0.8124545  0.8762876  0.5132246
 
 ######
 # GLM
 
-GLM_model<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="bayesglm", trControl=kFoldControl);
-GLM_model
+glm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glm", trControl=kFoldControl);
+glmnet<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmnet", trControl=kFoldControl);
+glmBoost<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmBoost", trControl=kFoldControl);
+bayesglm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="bayesglm", trControl=kFoldControl);
+
 
 #glm
 #ROC        Sens       Spec     
@@ -120,8 +116,9 @@ GLM_model
 ######
 # SVM
 
-SVM_model <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinear", trControl=kFoldControl);
-SVM_model
+svmLinear <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinear", trControl=kFoldControl);
+svmLinear2 <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinear2", trControl=kFoldControl);
+svmLinearWeights <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinearWeights", trControl=kFoldControl);
 
 #svmLinear
 #  ROC        Sens       Spec     
@@ -137,11 +134,22 @@ SVM_model
 
 
 ###################
-# Compare models
+# Compare models 
 
 
-#compare models by
-#sensitivity
-#specificity
-#ROC
+#Visualize models
+resampleList<-resamples(list(svmLinear=svmLinear,svmLinear2=svmLinear2,svmLinearWeights=svmLinearWeights,
+                           glm=glm,bayesglm=bayesglm, rf=rf, knn=knn, nb=nb
+                             ));
 
+bwplot(resampleList,metric="ROC")
+densityplot(resampleList,metric="ROC")
+dotplot(resampleList,xlim=range(0,1),metric="ROC")
+#Compare two best
+twoBestList <- resamples(list(glm=glm,bayesglm=bayesglm));
+xyplot(twoBestList,xlim=range(0,1), metric="ROC")
+
+#Next steps
+#Why bayesGLM seems better?
+
+#Get the measures 
