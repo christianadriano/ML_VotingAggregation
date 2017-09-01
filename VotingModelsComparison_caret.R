@@ -87,8 +87,10 @@ rf<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="rf", trControl=
 
 glm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glm", trControl=kFoldControl);
 glmnet<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmnet", trControl=kFoldControl);
-#glmBoost<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmBoost", trControl=kFoldControl);
 bayesglm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="bayesglm", trControl=kFoldControl);
+
+#Not part of Caret and produced results similar to bayesglm
+#glmBoost<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmBoost", trControl=kFoldControl);
 
 
 #glm
