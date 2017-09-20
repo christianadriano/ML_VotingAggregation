@@ -66,12 +66,12 @@ merge
 install.packages("gmodels");
 library(gmodels)
 
-CrossTable(x = trainingData[,"bugCovering"], y=fitModel.cv, prop.chisq = FALSE)
-plot(fitModel.cv)
+CrossTable(x = trainingData[,"bugCovering"], y=fitModel, prop.chisq = FALSE)
+plot(fitModel)
 fitModel
 fitFrame <- data.frame(fitModel)
 
-predictionFrame<-data.frame(fitModel.cv)
+predictionFrame<-data.frame(fitModel)
 mean(trainingData[predictionFrame[,1]==TRUE,"rankingVote"])
 trainingData[predictionFrame[,1]==TRUE,]
 predictionFrame[predictionFrame[,1]==TRUE,]
