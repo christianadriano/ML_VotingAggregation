@@ -39,7 +39,7 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 # Create custom indices: myFolds
 #Guarantees that we are going to use the exact 
 #same datasets for all models
-myFolds <- createFolds(summaryTable[,"rankingVote"] , k = 10); 
+myFolds <- createFolds(summaryTable[,"rankingVote"] , k = 15); 
 
 # Create reusable trainControl object: myControl
 kFoldControl <- trainControl(
@@ -93,7 +93,14 @@ compareTable <- data.frame(summaryTable$rankingVote,
                             predict(rf,summaryTable)
                             );
 colnames(compareTable) <- c("ranking","actual","nb","knn","rf");
-compareTable
+#compareTable
+
+predictedBugCoveringList<-compareTable[compareTable[,3]=="T",];
+predictedBugCoveringList[,1]
+rankingList
+predictedBugCoveringList
+#Computing the miminum ranking value
+
 
 ######
 # GLM
