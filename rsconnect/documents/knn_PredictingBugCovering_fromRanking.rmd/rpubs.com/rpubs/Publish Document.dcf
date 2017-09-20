@@ -2,7 +2,7 @@ name: Publish Document
 title:
 account: rpubs
 server: rpubs.com
-appId: https://api.rpubs.com/api/v1/document/297444/a8ffb819b264481589037c4dd9c7494d
-bundleId: https://api.rpubs.com/api/v1/document/297444/a8ffb819b264481589037c4dd9c7494d
-url: http://rpubs.com/christian_adriano/297444
-when: 1502109464.64396
+appId: https://api.rpubs.com/api/v1/document/310016/41bb908b639d454ba34cae9322e5503b
+bundleId: https://api.rpubs.com/api/v1/document/310016/41bb908b639d454ba34cae9322e5503b
+url: http://rpubs.com/christian_adriano/310016
+when: 1505930164.87595

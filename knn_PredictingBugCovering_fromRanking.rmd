@@ -18,7 +18,7 @@ library(ggplot2);
 
 ##The goal of the study
 <p>
-Making sense of a multiplce answers to one same question is challenging if one needs to extract some kind of consensus. The challenges relate to the different levels of skill, but also personal preferences. </p>
+Making sense of multiple answers to one same question is challenging if one needs to extract some kind of consensus. The challenges relate to the different levels of skill, but also personal preferences. </p>
 
 <p>In the case of my experiment, I asked workers if they believed that a code fragment was related to a unit test failure. Each question was asked to 20 different workers. Workers answered YES, NO, or I don´t know. </p>
 
@@ -48,11 +48,10 @@ summaryTable <- summaryTable[order(g),];#reorder the rows based on a random inde
 
 #convert columns to numeric
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); 
-summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); 
-summaryTable[,"thresholdVote"] <- as.numeric(unlist(summaryTable[,"thresholdVote"])); 
 
 #Select only the ranking as a feature to predict bugCovering
 trainingData <- summaryTable[,c("bugCovering","rankingVote")];
+trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
 
 ```
 
@@ -67,7 +66,7 @@ fitModel.cv <- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob = F
 ```
 
 ##Testing the model
-```{r test.knn.cv.class, include=FALSE}
+```{r test.knn.cv.class, include=TRUE}
 fitModel.cv.df<-data.frame(fitModel.cv);
 CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)
 ```
@@ -85,23 +84,29 @@ predictedList <- as.numeric(unlist(predictedBugCoveringList[,2]));
 mean(predictedList) #mean vote
 ```
 
-<p>Maximum ranking vote of the questions categorized as bug covering:</p>
-```{r knn.cv.minimal, echo=FALSE}
-min(predictedList) #minimal vote
+<p>Top ranking vote of the questions categorized as bug covering:</p>
+```{r knn.cv.highest, echo=FALSE}
+min(predictedList) #highest ranking 
 ```
 
+<p>Lowest ranking vote of the questions still categorized as bug covering:</p>
+```{r knn.cv.lowest, echo=FALSE}
+max(predictedList) #lowest ranking
+```
+
+       
 ##Plot metric distribution
-```{r plot, include=FALSE}
+```{r plot, include=TRUE}
 predictedList.df <- data.frame(predictedList);
 colnames(predictedList.df)<- c("votes");
+
 ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
-  geom_histogram(binwidth = 1,alpha=.5, position="identity")+
+  geom_histogram(binwidth = 0.5,alpha=.5, position="identity")+
   geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
              color="red", linetype="dashed", size=1) +
-  ggtitle("Distribution of votes for the questions categorized as bug covering")+
-  labs(x="Ranking vote of the questions categorized as bug-covering. Mininal vote=3, mean=1.71", 
+  ggtitle("Ranking of questions predicted as bug covering")+
+  labs(x="Ranking of YES votes of the questions categorized as bug-covering. lowest ranking=3, mean=1.71", 
        y="Frequency");
-
 
 ```
 <p></p>
@@ -134,7 +139,7 @@ knn_fit <- train(bugCovering ~ rankingVote, data = trainingData, method = "knn",
 
 bugCoveringPredicted <- predict(knn_fit,newdata = trainingData);
 
-confusionMatrix(data=bugCoveringPredicted,trainingData$bugCovering)
+confusionMatrix(data=bugCoveringPredicted,trainingData$bugCovering, mode="prec_recall", positive="TRUE")
  
 
 ```
