@@ -44,4 +44,12 @@ densityplot(resampleList,metric="ROC")
 dotplot(resampleList,xlim=range(0,1),metric="ROC")
 xyplot(resampleList,xlim=range(0,1), metric="ROC")
 
+compareTable <- data.frame(myData$Ranking,
+                           myData$Selected,
+                           predict(glmModel,myData),
+                           predict(knnModel,myData),
+                           predict(rfModel,myData)
+);
+colnames(compareTable) <- c("ranking","actual","glm","knn","rf");
+compareTable
 
