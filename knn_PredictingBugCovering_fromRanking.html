@@ -172,6 +172,40 @@ fitModel.cv &lt;- knn.cv(trainingData, trainingData$bugCovering, k=3, l=0, prob 
 </div>
 <div id="testing-the-model" class="section level2">
 <h2>Testing the model</h2>
+<pre class="r"><code>fitModel.cv.df&lt;-data.frame(fitModel.cv);
+CrossTable(x = trainingData$bugCovering, y=fitModel.cv.df[,1], prop.chisq = FALSE)</code></pre>
+<pre><code>## 
+##  
+##    Cell Contents
+## |-------------------------|
+## |                       N |
+## |           N / Row Total |
+## |           N / Col Total |
+## |         N / Table Total |
+## |-------------------------|
+## 
+##  
+## Total Observations in Table:  129 
+## 
+##  
+##                          | fitModel.cv.df[, 1] 
+## trainingData$bugCovering |     FALSE |      TRUE | Row Total | 
+## -------------------------|-----------|-----------|-----------|
+##                    FALSE |       102 |         2 |       104 | 
+##                          |     0.981 |     0.019 |     0.806 | 
+##                          |     0.944 |     0.095 |           | 
+##                          |     0.791 |     0.016 |           | 
+## -------------------------|-----------|-----------|-----------|
+##                     TRUE |         6 |        19 |        25 | 
+##                          |     0.240 |     0.760 |     0.194 | 
+##                          |     0.056 |     0.905 |           | 
+##                          |     0.047 |     0.147 |           | 
+## -------------------------|-----------|-----------|-----------|
+##             Column Total |       108 |        21 |       129 | 
+##                          |     0.837 |     0.163 |           | 
+## -------------------------|-----------|-----------|-----------|
+## 
+## </code></pre>
 </div>
 <div id="estimating-the-metric" class="section level2">
 <h2>Estimating the metric</h2>
@@ -240,16 +274,15 @@ For a more detailed discussion on k=1 value, refer to <a href="https://stats.sta
 ##                   Kappa : 0.5774          
 ##  Mcnemar's Test P-Value : 0.45325         
 ##                                           
-##             Sensitivity : 0.9423          
-##             Specificity : 0.6000          
-##          Pos Pred Value : 0.9074          
-##          Neg Pred Value : 0.7143          
-##              Prevalence : 0.8062          
-##          Detection Rate : 0.7597          
-##    Detection Prevalence : 0.8372          
+##               Precision : 0.7143          
+##                  Recall : 0.6000          
+##                      F1 : 0.6522          
+##              Prevalence : 0.1938          
+##          Detection Rate : 0.1163          
+##    Detection Prevalence : 0.1628          
 ##       Balanced Accuracy : 0.7712          
 ##                                           
-##        'Positive' Class : FALSE           
+##        'Positive' Class : TRUE            
 ## </code></pre>
 <p>
 <p>Compute the minimal ranking value that corresponded to the predicted bugCovering questions</p>
