@@ -25,16 +25,19 @@ summaryTable <- runMain();
 set.seed(9850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
+#head(summaryTable)
 
 ##################################################################
 #Build the KNN model
 
 #Select only the ranking as a feature to predict bugCovering
-trainingData <- summaryTable[,c("bugCovering","Yes.Count")];
+#trainingData <- summaryTable[,c("bugCovering","Yes.Count")];
+trainingData <- summaryTable[,c("bugCovering","rankingVote")];
+
 
 #Prepare explanatory variable (rankingVote) and target (bugCovering)
-trainingData <-data.frame(trainingData);
-trainingData$Yes.Count <- as.numeric(trainingData$Yes.Count);
+#trainingData <-data.frame(summaryTable);
+trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
 
 
 ######################################################################################
@@ -55,13 +58,14 @@ predictedBugCoveringList<-trainingData[fitModel.cv.df[,1]==TRUE,];
 predictedList <- as.numeric(unlist(predictedBugCoveringList[,2]));
 mean(predictedList)
 min(predictedList)
+max(predictedList)
 
 #Plot metric distribution
 predictedList.df <- data.frame(predictedList);
 colnames(predictedList.df)<- c("votes");
 
 ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
-  geom_histogram(binwidth = 1,alpha=.5, position="identity")+
+  geom_histogram(binwidth = .5,alpha=.5, position="identity")+
   geom_vline(aes(xintercept=mean(predictedList.df$votes, na.rm=T)),   # Ignore NA values for mean
              color="red", linetype="dashed", size=1) +
   ggtitle("Distribution of votes for the questions categorized as bug covering")+
@@ -99,11 +103,13 @@ confusionMatrix(data=bugCoveringPredicted,trainingData$bugCovering)
 #True Positives = 15
 #True Negatives = 98
 
-df<-data.frame(bugCoveringPredicted)
+df<-data.frame(bugCoveringPredicted);
 predictedBugCoveringList<-trainingData[df[,1]==TRUE,];
 rankingList <- as.numeric(unlist(predictedBugCoveringList[,2]));
+predictedBugCoveringList[,1]
 mean(rankingList)
 max(rankingList)
+min(rankingList)
 hist(rankingList,main="Bug-covering ranking dist., knn caret repeatedcv, mean=1.52, max=2",xlab="ranking");
 
 #Caret produced more false positives than knn.cv from class package. I tried to fine tune it more,
