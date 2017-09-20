@@ -35,6 +35,7 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
+  
 # Create custom indices: myFolds
 #Guarantees that we are going to use the exact 
 #same datasets for all models
@@ -49,6 +50,8 @@ kFoldControl <- trainControl(
   summaryFunction = twoClassSummary
 );
 
+
+#kFoldControl <- trainControl(index=myFolds, classProbs=TRUE, summaryFunction=twoClassSummary);
 
 #######################
 # Generate each model #
@@ -72,6 +75,7 @@ knn <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="knn", trContr
 # k  ROC        Sens       Spec     
 # 5  0.8290137  0.9778947  0.1340909
 
+
 ################
 # Random Forest
 
@@ -81,6 +85,15 @@ rf<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="rf", trControl=
 #rf
 # ROC        Sens       Spec     
 # 0.8124545  0.8762876  0.5132246
+
+compareTable <- data.frame(summaryTable$rankingVote,
+                           summaryTable$bugCoveringLabels,
+                            predict(nb,summaryTable),
+                            predict(knn,summaryTable),
+                            predict(rf,summaryTable)
+                            );
+colnames(compareTable) <- c("ranking","actual","nb","knn","rf");
+compareTable
 
 ######
 # GLM
@@ -155,3 +168,8 @@ xyplot(twoBestList,xlim=range(0,1), metric="ROC")
 #Why bayesGLM seems better?
 
 #Get the measures 
+predict(bayesglm,summaryTable)
+predict(glm,summaryTable)
+predict(svmLinear,summaryTable$rankingVote)
+
+
