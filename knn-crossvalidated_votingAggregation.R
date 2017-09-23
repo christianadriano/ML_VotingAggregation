@@ -2,6 +2,8 @@
 #Predict bug covering questions based on various values of 
 #the parameters in the aggregation methods
 
+install.packages("tibble")
+library(tibble)
 install.packages("class");
 library(class);
 install.packages("gmodels");
@@ -32,12 +34,12 @@ summaryTable <- summaryTable[order(g),];
 
 #Select only the ranking as a feature to predict bugCovering
 #trainingData <- summaryTable[,c("bugCovering","Yes.Count")];
-trainingData <- summaryTable[,c("bugCovering","rankingVote")];
+trainingData <- summaryTable[,c("bugCovering","majorityVote")];
 
 
 #Prepare explanatory variable (rankingVote) and target (bugCovering)
 #trainingData <-data.frame(summaryTable);
-trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
+trainingData$rankingVote <- as.numeric(trainingData$majorityVote);
 
 
 ######################################################################################
