@@ -112,7 +112,7 @@ ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
 <p></p>
 
 ## Why not use k=1?
-<p>Last but not least, I also tried k=1, but the results seemed overfit the training set. The reason is that for k=1 the algorithm estimates the probability based on a single data point, which is the closest neighbor. This ends up being very sensitive to distortions such as outliers, noise, or mislabelling of data. Moreover, since I am using cross validation which uses the same dataset to train and test by leaving one ou, there is even higher risks of comparing the test data point against itself because the sampling is done with replacement. Therefore, I decided to use values larger than 3 and odd in order to avoid ties.</p>
+<p>Last but not least, I also tried k=1, but the results seemed to overfit the training set. The reason is that for k=1 the algorithm estimates the probability based on a single data point, which is the closest neighbor. This ends up being very sensitive to distortions such as outliers, noise, or data mislabelling. Moreover, since I am using cross-validation which uses the same dataset to train and test by leaving one out, there is a even higher risks of comparing the test data point against itself because the sampling is done with replacement. Therefore, I decided to use values of k larger than 3 and odd in order to avoid ties.</p>
 
 <p>For a more detailed discussion on k=1 value, refer to https://stats.stackexchange.com/questions/107870/does-k-nn-with-k-1-always-implies-overfitting#107913 </p>
 
@@ -135,7 +135,14 @@ mean(trainingData$rankingVote);
 knn_fit <- train(bugCovering ~ rankingVote, data = trainingData, method = "knn",
                  trControl=trctrl,
                  preProcess = c("center", "scale"),
-                 tuneLength = 10)
+                 tuneLength = 10);
+```
+### Model selection
+```{r knn.caret.model.fit, echo=TRUE}
+knn_fit
+```
+#### Confusion matrix using the selected model
+```{r knn.caret.model.confusion, echo=TRUE}
 
 bugCoveringPredicted <- predict(knn_fit,newdata = trainingData);
 

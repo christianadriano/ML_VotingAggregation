@@ -244,7 +244,7 @@ ggplot(data=predictedList.df, aes(x=predictedList.df$votes)) +
 <div id="why-not-use-k1" class="section level2">
 <h2>Why not use k=1?</h2>
 <p>
-Last but not least, I also tried k=1, but the results seemed overfit the training set. The reason is that for k=1 the algorithm estimates the probability based on a single data point, which is the closest neighbor. This ends up being very sensitive to distortions such as outliers, noise, or mislabelling of data. Moreover, since I am using cross validation which uses the same dataset to train and test by leaving one ou, there is even higher risks of comparing the test data point against itself because the sampling is done with replacement. Therefore, I decided to use values larger than 3 and odd in order to avoid ties.
+Last but not least, I also tried k=1, but the results seemed to overfit the training set. The reason is that for k=1 the algorithm estimates the probability based on a single data point, which is the closest neighbor. This ends up being very sensitive to distortions such as outliers, noise, or data mislabelling. Moreover, since I am using cross-validation which uses the same dataset to train and test by leaving one out, there is a even higher risks of comparing the test data point against itself because the sampling is done with replacement. Therefore, I decided to use values of k larger than 3 and odd in order to avoid ties.
 </p>
 <p>
 For a more detailed discussion on k=1 value, refer to <a href="https://stats.stackexchange.com/questions/107870/does-k-nn-with-k-1-always-implies-overfitting#107913" class="uri">https://stats.stackexchange.com/questions/107870/does-k-nn-with-k-1-always-implies-overfitting#107913</a>
@@ -259,6 +259,39 @@ For a more detailed discussion on k=1 value, refer to <a href="https://stats.sta
 <p>
 <p>I will do 5 repeats of 10-Fold CV. I will fit a KNN model that evaluates 10 values of k</p>
 <pre><code>## [1] 5.248062</code></pre>
+<div id="model-selection" class="section level3">
+<h3>Model selection</h3>
+<pre class="r"><code>knn_fit</code></pre>
+<pre><code>## k-Nearest Neighbors 
+## 
+## 129 samples
+##   1 predictor
+##   2 classes: 'FALSE', 'TRUE' 
+## 
+## Pre-processing: centered (1), scaled (1) 
+## Resampling: Cross-Validated (10 fold, repeated 5 times) 
+## Summary of sample sizes: 116, 117, 116, 116, 116, 115, ... 
+## Resampling results across tuning parameters:
+## 
+##   k   Accuracy   Kappa    
+##    5  0.8731685  0.5275465
+##    7  0.8717399  0.5196293
+##    9  0.8760256  0.5339682
+##   11  0.8774359  0.5200817
+##   13  0.8760256  0.5382455
+##   15  0.8760256  0.5382455
+##   17  0.8760256  0.5382455
+##   19  0.8760256  0.5382455
+##   21  0.8760256  0.5382455
+##   23  0.8760256  0.5382455
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was k = 11.</code></pre>
+<div id="confusion-matrix-using-the-selected-model" class="section level4">
+<h4>Confusion matrix using the selected model</h4>
+<pre class="r"><code>bugCoveringPredicted &lt;- predict(knn_fit,newdata = trainingData);
+
+confusionMatrix(data=bugCoveringPredicted,trainingData$bugCovering, mode=&quot;prec_recall&quot;, positive=&quot;TRUE&quot;)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
@@ -294,6 +327,8 @@ By the distribution of ranking outcomes, we can note that the metric value for R
 </p>
 <p>
 </p>
+</div>
+</div>
 </div>
 <div id="conclusions" class="section level2">
 <h2>Conclusions</h2>
