@@ -33,13 +33,13 @@ summaryTable <- summaryTable[order(g),];
 #Build the KNN model
 
 #Select only the ranking as a feature to predict bugCovering
-#trainingData <- summaryTable[,c("bugCovering","Yes.Count")];
-trainingData <- summaryTable[,c("bugCovering","majorityVote")];
-
+trainingData <- summaryTable[,c("bugCovering","rankingVote","majorityVote","Yes.Count")];
 
 #Prepare explanatory variable (rankingVote) and target (bugCovering)
 #trainingData <-data.frame(summaryTable);
-trainingData$rankingVote <- as.numeric(trainingData$majorityVote);
+trainingData$rankingVote <- as.numeric(trainingData$rankingVote);
+trainingData$majorityVote <- as.numeric(trainingData$majorityVote);
+trainingData$Yes.count <- as.numeric(trainingData$Yes.Count);
 
 
 ######################################################################################
@@ -95,7 +95,7 @@ mean(trainingData$rankingVote);
 knn_fit <- train(bugCovering ~ rankingVote, data = trainingData, method = "knn",
                  trControl=trctrl,
                  preProcess = c("center", "scale"),
-                 tuneLength = 10)
+                 tuneLength = 10);
 
 bugCoveringPredicted <- predict(knn_fit,newdata = trainingData);
 
