@@ -29,7 +29,10 @@ summaryTable <- summaryTable[order(g),];
 
 #convert columns to numeric
 summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
-summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); 
+summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"]));
+summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"]));
+summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"]));
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"majorityVote"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
@@ -37,9 +40,8 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
   
 # Create custom indices: myFolds
-#Guarantees that we are going to use the exact 
-#same datasets for all models
-myFolds <- createFolds(summaryTable[,"rankingVote"] , k = 15); 
+#Guarantees that we are going to use the exact same datasets for all models
+myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 10); 
 
 # Create reusable trainControl object: myControl
 kFoldControl <- trainControl(
@@ -51,85 +53,81 @@ kFoldControl <- trainControl(
 );
 
 
-#kFoldControl <- trainControl(index=myFolds, classProbs=TRUE, summaryFunction=twoClassSummary);
-
 #######################
 # Generate each model #
 
 ##############
 # Naive Bayes
 
-nb<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="nb", trControl=kFoldControl);
+nb<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="nb", trControl=kFoldControl);
 
-#nb
+nb
+
+#AM.1
+
+
+#AM.2
+#usekernel  ROC        Sens       Spec     
+#FALSE      0.7136796  0.9380167  0.4383509
+#TRUE       0.7241444  0.9302171  0.4439717
+
+
+#AM.3:
 # usekernel  ROC        Sens       Spec     
 # FALSE      0.7546970  0.9031409  0.5664596
-# TRUE      0.7534538  0.9270484  0.5095109
+# TRUE       0.7534538  0.9270484  0.5095109
+
+
 
 ######
 # KNN
 
-knn <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="knn", trControl=kFoldControl);
+knn <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
 
-#knn
-# k  ROC        Sens       Spec     
-# 5  0.8290137  0.9778947  0.1340909
-
+knn
+#Aggre. k  ROC        Sens       Spec
+#AM.1:
+#AM.2: 7  0.8338240  0.9851064  0.0750000
+#AM.3: 5  0.8290137  0.9778947  0.1340909
 
 ################
 # Random Forest
 
+rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
 
-rf<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="rf", trControl=kFoldControl);
+rf
+#Aggre.  ROC        Sens       Spec     
+#AM.1:
+#AM.2: 0.7938766  0.8638338  0.4812422
+#AM.3: 0.8124545  0.8762876  0.5132246
 
-#rf
-# ROC        Sens       Spec     
-# 0.8124545  0.8762876  0.5132246
-
-compareTable <- data.frame(summaryTable$rankingVote,
-                           summaryTable$bugCoveringLabels,
-                            predict(nb,summaryTable),
-                            predict(knn,summaryTable),
-                            predict(rf,summaryTable)
-                            );
-colnames(compareTable) <- c("ranking","actual","nb","knn","rf");
-#compareTable
-
-predictedBugCoveringList<-compareTable[compareTable[,3]=="T",];
-predictedBugCoveringList[,1]
-rankingList
-predictedBugCoveringList
-#Computing the miminum ranking value
 
 
 ######
 # GLM
 
-glm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glm", trControl=kFoldControl);
-glmnet<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmnet", trControl=kFoldControl);
-bayesglm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="bayesglm", trControl=kFoldControl);
+glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl);
+glmModel
+#Aggre. ROC        Sens       Spec     
+#AM.1:
+#AM.2:  0.8276035  0.9338004  0.4748377
+#AM.3:  0.8747113  0.9237826  0.4507378
+
+bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
+bayesglm
+# Aggre.  ROC        Sens       Spec     
+#AM.1:
+#AM.2: 0.8797804  0.9338004  0.4748377
+#AM.3: 0.8898239  0.9322932  0.4371014
+
 
 #Not part of Caret and produced results similar to bayesglm
-#glmBoost<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="glmBoost", trControl=kFoldControl);
+#glmBoost<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glmBoost", trControl=kFoldControl);
 
+#Not working
+glmnet<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glmnet", trControl=kFoldControl);
 
-#glm
-#ROC        Sens       Spec     
-#0.8747113  0.9237826  0.4507378
-
-#glmnet
-#ROC        Sens       Spec     
-#0.8747113  0.9237826  0.4507378
-
-#glmBoost
-#mstop  ROC        Sens       Spec     
-#150    0.8898239  0.9259331  0.4174045
-
-# bayesglm
-# ROC        Sens       Spec     
-# 0.8898239  0.9322932  0.4371014
-
-#glmnet model is a more sophisticated solution that use penalty terms to reduce the magnitude 
+#glmnet model is a more sophisticated solution that uses penalty terms to reduce the magnitude 
 #of the two GLM coeficients. The goal of GMLNet is to explain as much variance in the model.
 #The trade-off is that glmnet accepts more bias in the data (more risk of overfitting)
 #In any case, both glmnet and glm produce the exact same results for my data, therefore I favored
@@ -138,45 +136,81 @@ bayesglm<- train(bugCoveringLabels ~ rankingVote,summaryTable, method="bayesglm"
 ######
 # SVM
 
-svmLinear <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinear", trControl=kFoldControl);
-svmLinear2 <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinear2", trControl=kFoldControl);
-svmLinearWeights <- train(bugCoveringLabels ~ rankingVote,summaryTable, method="svmLinearWeights", trControl=kFoldControl);
+svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
+svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear2", trControl=kFoldControl);
+svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl);
 
-#svmLinear
-#  ROC        Sens       Spec     
-#0.6798618  0.9643897  0.2357955
+svmLinear
+#Aggre.    ROC        Sens       Spec     
+#AM.1:
+#AM.2: 0.598301  0.9589485  0.2627181
+#AM.3: 0.6798618  0.9643897  0.2357955
 
-#svmLinear2
-#cost  ROC        Sens       Spec     
-#0.50  0.7713566  0.9757671  0.1613636
+svmLinear2
+#Aggre. cost  ROC        Sens       Spec     
+#AM.1: 
+#AM.2: 1.00  0.8009603  0.9616318  0.2776515
+#AM.3: 0.50  0.7713566  0.9757671  0.1613636
 
-#svmLinearWeights
-# cost  weight  ROC        Sens       Spec    
-# 0.50  3       0.8102679  0.8439114  0.5645059
-
+svmLinearWeights
+#Aggre. cost  weight  ROC        Sens       Spec    
+#AM.1:
+#AM.2: 1.00  2       0.8016421  0.9082113  0.6105458
+#AM.3: 0.50  3       0.8102679  0.8439114  0.5645059
 
 ###################
 # Compare models 
 
+#Results of mininal
 
+###################
 #Visualize models
 resampleList<-resamples(list(svmLinear=svmLinear,svmLinear2=svmLinear2,svmLinearWeights=svmLinearWeights,
-                           glm=glm,bayesglm=bayesglm, rf=rf, knn=knn, nb=nb
+                           glm=glmModel,bayesglm=bayesglm, rf=rf, knn=knn, nb=nb
                              ));
 
 bwplot(resampleList,metric="ROC")
 densityplot(resampleList,metric="ROC")
 dotplot(resampleList,xlim=range(0,1),metric="ROC")
 #Compare two best
-twoBestList <- resamples(list(glm=glm,bayesglm=bayesglm));
+twoBestList <- resamples(list(svmLinearWeights=svmLinearWeights,bayesglm=bayesglm));
 xyplot(twoBestList,xlim=range(0,1), metric="ROC")
 
-#Next steps
-#Why bayesGLM seems better?
+#compare second and third best
+secodThirdBestList <- resamples(list(knn=knn,bayesglm=bayesglm));
+xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 
-#Get the measures 
-predict(bayesglm,summaryTable)
-predict(glm,summaryTable)
-predict(svmLinear,summaryTable$rankingVote)
+########################################
+#Model selection results
+#Best model for ranking (AM.3)
+
+#Best model for Threshold (AM.1)
+
+#Best model for Majority voting (AM.2)
+#svmLinearWeights is tied with bayesglm
 
 
+
+##################################################
+#Predict n based on best model
+compareTable <- data.frame(summaryTable$explanatoryVariable,
+                           summaryTable$bugCoveringLabels,
+                           predict(nb,summaryTable),
+                           predict(knn,summaryTable),
+                           predict(rf,summaryTable),
+                           predict(bayesglm,summaryTable),
+                           predict(svmLinearWeights,summaryTable)
+);
+colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf","glm","svm");
+compareTable
+
+predictedBugCoveringList<-compareTable[compareTable$glm=="T",];
+predictedBugCoveringList$explanatoryVariable
+predictedBugCoveringList
+
+#Computing the miminum value of n that predicted bugCovering True
+min(predictedBugCoveringList$explanatoryVariable);
+
+
+
+#rnkin
