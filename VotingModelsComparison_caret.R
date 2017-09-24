@@ -41,7 +41,7 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
   
 # Create custom indices: myFolds
 #Guarantees that we are going to use the exact same datasets for all models
-myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 10); 
+myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 12); 
 
 # Create reusable trainControl object: myControl
 kFoldControl <- trainControl(
@@ -64,7 +64,6 @@ nb<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="nb", tr
 nb
 
 #AM.1
-
 
 #AM.2
 #usekernel  ROC        Sens       Spec     
@@ -125,7 +124,7 @@ bayesglm
 #glmBoost<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glmBoost", trControl=kFoldControl);
 
 #Not working
-glmnet<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glmnet", trControl=kFoldControl);
+#glmnet<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glmnet", trControl=kFoldControl);
 
 #glmnet model is a more sophisticated solution that uses penalty terms to reduce the magnitude 
 #of the two GLM coeficients. The goal of GMLNet is to explain as much variance in the model.
