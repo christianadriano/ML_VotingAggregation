@@ -41,7 +41,12 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
   
 # Create custom indices: myFolds
 #Guarantees that we are going to use the exact same datasets for all models
-myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 12); 
+myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 10); 
+
+#larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
+#the prediction has large variation. The reason is that larger K makes each training data large and
+#very similar.
+#nice explanation here: https://stats.stackexchange.com/questions/27730/choice-of-k-in-k-fold-cross-validation
 
 # Create reusable trainControl object: myControl
 kFoldControl <- trainControl(
