@@ -115,6 +115,6 @@ min(rankingList)
 hist(rankingList,main="Bug-covering ranking dist., knn caret repeatedcv, mean=1.52, max=2",xlab="ranking");
 
 #Caret produced more false positives than knn.cv from class package. I tried to fine tune it more,
-#but was not enough. The k value for Caret seems very high 15 t 23.
+#but was not enough. The k value selected by CARET was 23.
 
 ###########################################################################################
