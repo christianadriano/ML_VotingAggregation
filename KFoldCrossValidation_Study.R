@@ -36,10 +36,11 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
+for(folds in 2:4){
   
   # Create custom indices: myFolds
   #Guarantees that we are going to use the exact same datasets for all models
-  myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 10); 
+  myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = folds); 
   
   #larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
   #the prediction has large variation. The reason is that larger K makes each training data large and
@@ -54,24 +55,44 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
     savePredictions = TRUE, #
     summaryFunction = twoClassSummary
   );
+  
   #knnModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
   #rfModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
   #bayesglmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
-  svmLinearWeightsModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl);
+  svmLinearWeightsModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, 
+                                 method="svmLinearWeights", trControl=kFoldControl, metric="Sens");
   svmLinearWeightsModel 
-
-bugCoveringPredicted <- predict(svmLinearWeightsModel,newdata = summaryTable);
-matrixResult<- confusionMatrix(data=bugCoveringPredicted,summaryTable$bugCoveringLabels, positive="T");
-trueNegatives<- matrixResult$table[1,1];
-truePositives<- matrixResult$table[2,2];
-falseNegatives<- matrixResult$table[1,2];
-falsePositives<- matrixResult$table[2,1];
-
-accuracy <- (truePositives + trueNegatives) / (truePositives + trueNegatives + falsePositives + falseNegatives);
-trainingError <- 1-accuracy;
-precision <- truePositives / (truePositives + falsePositives);
-recall <- truePositives / (truePositives + falseNegatives);
-sensitivity <- trueNegatives / (trueNegatives + falsePositives);
-specificity <- truePositives / (truePositives + falseNegatives);
-
-
+  
+  bugCoveringPredicted <- predict(svmLinearWeightsModel,newdata = summaryTable);
+  matrixResult<- confusionMatrix(data=bugCoveringPredicted,summaryTable$bugCoveringLabels, positive="T");
+  trueNegatives<- matrixResult$table[1,1];
+  truePositives<- matrixResult$table[2,2];
+  falseNegatives<- matrixResult$table[1,2];
+  falsePositives<- matrixResult$table[2,1];
+  
+  accuracy <- (truePositives + trueNegatives) / (truePositives + trueNegatives + falsePositives + falseNegatives);
+  trainingError <- 1-accuracy;
+  precision <- truePositives / (truePositives + falsePositives);
+  recall <- truePositives / (truePositives + falseNegatives);
+  sensitivity <- trueNegatives / (trueNegatives + falsePositives);
+  specificity <- truePositives / (truePositives + falseNegatives);
+  
+  outcome <- matrix(ncol = 11, nrow = 100);
+  colnames(outcome)<- c("kfolds","trainingError","accuracy","trueNegatives","truePositives",
+                        "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
+  row <- folds-1;
+ 
+  outcome[row,"kfolds"]<-folds;
+  outcome[row,"trainingError"]<-trainingError;
+  outcome[row,"accuracy"]<-accuracy;
+  outcome[row,"trueNegatives"]<-trueNegatives;
+  outcome[row,"truePositives"]<-truePositives;
+  outcome[row,"falseNegatives"]<-falseNegatives;
+  outcome[row,"falsePositives"]<-falsePositives;
+  outcome[row,"precision"]<-precision;
+  outcome[row,"recall"]<-recall;
+  outcome[row,"sensitivity"]<-sensitivity;
+  outcome[row,"specificity"]<-specificity;
+  
+  write.csv(outcome, file = "svm_kfold_study.csv");
+}
