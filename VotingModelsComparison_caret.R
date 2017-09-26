@@ -142,7 +142,7 @@ bayesglm
 
 svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
 svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear2", trControl=kFoldControl);
-svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl);
+svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl, metric="Spec");
 
 svmLinear
 #Aggre.    ROC        Sens       Spec     
@@ -206,9 +206,21 @@ compareTable <- data.frame(summaryTable$explanatoryVariable,
                            predict(svmLinearWeights,summaryTable)
 );
 colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf","glm","svm");
+
+####################################################
+#Predict n based on best model
+compareTable <- data.frame(summaryTable$explanatoryVariable,
+                           summaryTable$bugCoveringLabels,
+                           predict(svmLinearWeights,summaryTable)
+);
+colnames(compareTable) <- c("explanatoryVariable","actual","svm");
+
+
+
+####################################################
 compareTable
 
-predictedBugCoveringList<-compareTable[compareTable$glm=="T",];
+predictedBugCoveringList<-compareTable[compareTable$svm=="T",];
 predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
 
