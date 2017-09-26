@@ -1,7 +1,7 @@
 "","kfolds","trainingError","accuracy","trueNegatives","truePositives","falseNegatives","falsePositives","precision","recall","specificity","sensitivity"
-"1",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"1",NA,0.131782945736434,0.868217054263566,99,13,12,5,0.722222222222222,0.52,0.52,0.951923076923077
 "2",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
-"3",4,0.162790697674419,0.837209302325581,98,10,15,6,0.625,0.4,0.4,0.942307692307692
+"3",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 "4",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 "5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
 "6",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
