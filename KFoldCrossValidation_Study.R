@@ -3,7 +3,13 @@
 #KNN, RandomForest, GLM, or SVN
 
 #libraries
-library(caret)
+#library(dplyr) # for data manipulation
+library(caret) # for model-building
+#library(DMwR) # for smote implementation
+#library(purrr) # for functional programming (map)
+install.packages("pROC")
+library(pROC) # for AUC calculations
+
 
 
 ####################
@@ -36,11 +42,15 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
-for(folds in 2:4){
+## Table to store the outcomes from the training and model selection and prediction
+outcome <- matrix(ncol = 11, nrow = 40);
+colnames(outcome)<- c("kfolds","trainingError","AUC","accuracy","trueNegatives","truePositives",
+                      "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
+
+for(folds in 2:40){
   
   # Create custom indices: myFolds
   #Guarantees that we are going to use the exact same datasets for all models
-  myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = folds); 
   
   #larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
   #the prediction has large variation. The reason is that larger K makes each training data large and
@@ -59,16 +69,22 @@ for(folds in 2:4){
   #knnModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
   #rfModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
   #bayesglmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
-  svmLinearWeightsModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, 
-                                 method="svmLinearWeights", trControl=kFoldControl, metric="Sens");
-  svmLinearWeightsModel 
+  fitModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, 
+                                 method="knn", trControl=kFoldControl, metric="Spec");
   
-  bugCoveringPredicted <- predict(svmLinearWeightsModel,newdata = summaryTable);
+  #check if n changes if I optimize for False Negatives (Sensitivity), but need to know what is the Positive class for training
+  
+  fitModel
+  bugCoveringPredicted <- predict(fitModel,newdata = summaryTable);
   matrixResult<- confusionMatrix(data=bugCoveringPredicted,summaryTable$bugCoveringLabels, positive="T");
   trueNegatives<- matrixResult$table[1,1];
   truePositives<- matrixResult$table[2,2];
   falseNegatives<- matrixResult$table[1,2];
-  falsePositives<- matrixResult$table[2,1];
+  falsePositives<- matrixResult$table[2,1];?
+  
+  #compute AUC
+  aucValue<- roc(response = as.numeric(summaryTable$bugCoveringLabels),predictor = as.numeric(bugCoveringPredicted)) %>% auc();
+  aucValue<-as.numeric(aucValue);
   
   accuracy <- (truePositives + trueNegatives) / (truePositives + trueNegatives + falsePositives + falseNegatives);
   trainingError <- 1-accuracy;
@@ -77,13 +93,11 @@ for(folds in 2:4){
   sensitivity <- trueNegatives / (trueNegatives + falsePositives);
   specificity <- truePositives / (truePositives + falseNegatives);
   
-  outcome <- matrix(ncol = 11, nrow = 100);
-  colnames(outcome)<- c("kfolds","trainingError","accuracy","trueNegatives","truePositives",
-                        "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
-  row <- folds-1;
- 
+   row <- folds-1;
+ #row<-1
   outcome[row,"kfolds"]<-folds;
   outcome[row,"trainingError"]<-trainingError;
+  outcome[row,"AUC"] <- aucValue;
   outcome[row,"accuracy"]<-accuracy;
   outcome[row,"trueNegatives"]<-trueNegatives;
   outcome[row,"truePositives"]<-truePositives;
@@ -94,5 +108,6 @@ for(folds in 2:4){
   outcome[row,"sensitivity"]<-sensitivity;
   outcome[row,"specificity"]<-specificity;
   
-  write.csv(outcome, file = "svm_kfold_study.csv");
 }
+
+write.csv(outcome, file = ".//kfold-study//knn_kfold_study.csv");
