@@ -51,6 +51,7 @@ for(folds in 2:40){
   
   # Create custom indices: myFolds
   #Guarantees that we are going to use the exact same datasets for all models
+  myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = folds ); 
   
   #larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
   #the prediction has large variation. The reason is that larger K makes each training data large and
