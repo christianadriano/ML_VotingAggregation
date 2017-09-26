@@ -174,9 +174,10 @@ colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf","glm"
 
 ####################################################
 #Predict n based on best model
+bugCoveringPredicted <- predict(svmLinearWeights_MAE,summaryTable);
 compareTable <- data.frame(summaryTable$explanatoryVariable,
                            summaryTable$bugCoveringLabels,
-                           predict(svmLinearWeights,summaryTable)
+                           predict(svmLinearWeights_MAE,summaryTable)
 );
 colnames(compareTable) <- c("explanatoryVariable","actual","svm");
 
@@ -192,6 +193,6 @@ predictedBugCoveringList
 #Computing the miminum value of n that predicted bugCovering True
 min(predictedBugCoveringList$explanatoryVariable);
 
-
+confusionMatrix(data=bugCoveringPredicted,summaryTable$bugCoveringLabels, positive="T");
 
 #rnkin
