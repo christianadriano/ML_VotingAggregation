@@ -87,12 +87,9 @@ svmLinearWeights_Kappa <- train(bugCoveringLabels ~ explanatoryVariable,summaryT
 svmLinearWeights_Accuracy <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", 
                                trControl=kFoldControl, metric="Accuracy");
 
-maeFunction <- function(preds, dtrain) {
-  labels <- getinfo(dtrain, "label")
-  err <- as.numeric(sum(abs(labels - preds)))/length(labels)
-  return(list(metric = "MAE", err))
-}
-
+ 
+############################################################################ 
+## MAE 
 # Define cost functions
 # Custom MAE metric in caret format
 mae_metric <- function (data,
@@ -119,9 +116,11 @@ svmLinearWeights_MAE <- train(bugCoveringLabels ~ explanatoryVariable,summaryTab
 
 svmLinearWeights_MAE
 
+###############################################################
+
 
 svmLinearWeights_ROC <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", 
-                                   trControl=kFoldControl, metric="ROC");
+                                   trControl=kFoldControl, metric="Accuracy");
 
 ###################
 # Compare models 
