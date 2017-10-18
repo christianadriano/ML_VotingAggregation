@@ -43,12 +43,12 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
 ## Table to store the outcomes from the training and model selection and prediction
-outcome <- matrix(ncol = 11, nrow = 40);
+outcome <- matrix(ncol = 12, nrow = 40);
 colnames(outcome)<- c("kfolds","trainingError","AUC","accuracy","trueNegatives","truePositives",
                       "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
 
-for(folds in 2:40){
-  
+#for(folds in 2:40){
+  folds <- 10;
   # Create custom indices: myFolds
   #Guarantees that we are going to use the exact same datasets for all models
   myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = folds ); 
@@ -70,8 +70,13 @@ for(folds in 2:40){
   #knnModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
   #rfModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
   #bayesglmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
+  
+  svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
+  svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear2", trControl=kFoldControl);
+  svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl, metric="Spec");
+  
   fitModel <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, 
-                                 method="knn", trControl=kFoldControl, metric="Spec");
+                  method="rf", trControl=kFoldControl, metric="Sens");
   
   #check if n changes if I optimize for False Negatives (Sensitivity), but need to know what is the Positive class for training
   
@@ -91,8 +96,8 @@ for(folds in 2:40){
   trainingError <- 1-accuracy;
   precision <- truePositives / (truePositives + falsePositives);
   recall <- truePositives / (truePositives + falseNegatives);
-  sensitivity <- trueNegatives / (trueNegatives + falsePositives);
-  specificity <- truePositives / (truePositives + falseNegatives);
+  specificity <- trueNegatives / (trueNegatives + falsePositives);
+  sensitivity <- truePositives / (truePositives + falseNegatives);
   
    row <- folds-1;
  #row<-1
@@ -109,6 +114,6 @@ for(folds in 2:40){
   outcome[row,"sensitivity"]<-sensitivity;
   outcome[row,"specificity"]<-specificity;
   
-}
+#}
 
-write.csv(outcome, file = ".//kfold-study//knn_kfold_study.csv");
+write.csv(outcome, file = ".//kfold-study/rf_sens_kfold_study.csv");
