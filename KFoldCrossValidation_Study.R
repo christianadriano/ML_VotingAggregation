@@ -53,9 +53,10 @@ colnames(outcome)<- c("kfolds","trainingError","AUC","accuracy","trueNegatives",
   #Guarantees that we are going to use the exact same datasets for all models
   myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = folds ); 
   
-  #larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
-  #the prediction has large variation. The reason is that larger K makes each training data large and
-  #very similar.
+  #larger K implies less bias (but more overfitting). However, larger K implies larger variance (overfitting), 
+  #i.e., modeling noise, which makes the prediction to presentlarge variation. 
+  #The reason for this is that larger K makes each training data large and very similar, while at the same
+  #time makes the testing data very dissimilar.
   #nice explanation here: https://stats.stackexchange.com/questions/27730/choice-of-k-in-k-fold-cross-validation
   
   # Create reusable trainControl object: myControl
