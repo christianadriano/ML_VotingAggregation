@@ -46,3 +46,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 ~$summaryVotePredictionModels.xlsx
+histogram 1
+histogram 3
+precisionPlot 3
