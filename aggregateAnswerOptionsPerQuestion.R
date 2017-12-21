@@ -41,6 +41,7 @@ appendGroundTruth<- function(summaryTable, questionList){
   return(summaryTable);  
 }
 
+
 setJavaMethodID<- function(summaryTable){
   
   summaryTable<- setRangeID(summaryTable,1,c(0:9));
@@ -98,7 +99,23 @@ runMain<-function(){
 }
 
 
-
+runFromSample<-function(sampledDF){
+  # Load vote aggregation methods
+  source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateVotes.R");
+  
+  # Initialize Java method questions and bug covering data
+  questionList <- c(1,4,10,14,20,23,30,32,55,56,57,58,59,72,73,77,84,92,95,97,102,104,115,119,123);
+  
+  summaryTable <- countAnswerOptions(sampledDF);
+  summaryTable <- appendGroundTruth(summaryTable,questionList);
+  summaryTable<- setJavaMethodID(summaryTable);
+  summaryTable <- computeMajorityVote(summaryTable);
+  summaryTable <- computeThresholdVote(summaryTable,6);
+  summaryTable<- computeRanking(summaryTable);
+  #summaryTable<- computePredicedbyRanking(summaryTable);
+  
+  return (summaryTable);
+}
 
 
 

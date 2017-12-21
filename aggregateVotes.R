@@ -38,13 +38,14 @@ computeRanking <- function(summaryTable){
   return(summaryTable);
 }
 
-
+#rank questions based on nmber of YES's
 rankQuestions <- function(selection, labels){
   
   for(i in 1:length(labels[,2])){
     matchedRows <- which(selection$Yes.Count==labels[i,1]);  
     selection[matchedRows,"rankingVote"]<-labels[i,2];
   }
-  
   return(selection);
 }
+
+
