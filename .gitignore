@@ -49,3 +49,6 @@ Temporary Items
 histogram 1
 histogram 3
 precisionPlot 3
+precisionPlot 1
+precisionPlot 2
+histogram 2
