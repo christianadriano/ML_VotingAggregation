@@ -109,18 +109,15 @@ rf
 ################
 # xgBoostTree
 
-xgb.train.data = xgb.DMatrix(data.matrix(summaryTable[,"explanatoryVariable"]), 
-                             label = summaryTable[,"bugCoveringLabels"],
-                             missing = NA);
+xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
+                method="gbm", trControl=kFoldControl);
 
-xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="xgbtree", trControl=kFoldControl);
 
 xgbtree
-
 ######
 # GLM
 
-glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl);
+glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
 glmModel
 #Aggre. ROC        Sens       Spec     
 #AM.1:
