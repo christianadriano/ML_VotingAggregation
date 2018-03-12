@@ -78,10 +78,10 @@ selectRows <-function(summaryTable,questionIDList){
 runMain<-function(){
   
   # Load vote aggregation methods
-  source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateVotes.R");
+  source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateVotes.R");
   
   # Import data
-  source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//loadAllAnswers.R");
+  source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//loadAllAnswers.R");
   dataf <- loadAnswers("answerList_data.csv");
   
   # Initialize Java method questions and bug covering data
@@ -101,7 +101,7 @@ runMain<-function(){
 
 runFromSample<-function(sampledDF){
   # Load vote aggregation methods
-  source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateVotes.R");
+  source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateVotes.R");
   
   # Initialize Java method questions and bug covering data
   questionList <- c(1,4,10,14,20,23,30,32,55,56,57,58,59,72,73,77,84,92,95,97,102,104,115,119,123);
