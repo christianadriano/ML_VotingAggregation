@@ -1,15 +1,16 @@
 #Model comparisons using CARET package
 #Which model provides the best predictions?
-#NaiveBayes,KNN, RandomForest, SVN, or GLM
+#NaiveBayes,KNN, RandomForest, SVN, GLM, or xgboostTree
 
 #libraries
+install.packages("caret")
 library(caret)
 
 
 ####################
 #Import data
 
-source("C://Users//chris//OneDrive//Documentos//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
+source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
 summaryTable <- runMain();
 #summaryTable <- data.frame(summaryTable);
 
@@ -105,7 +106,16 @@ rf
 #AM.2: 0.7938766  0.8638338  0.4812422
 #AM.3: 0.8124545  0.8762876  0.5132246
 
+################
+# xgBoostTree
 
+xgb.train.data = xgb.DMatrix(data.matrix(summaryTable[,"explanatoryVariable"]), 
+                             label = summaryTable[,"bugCoveringLabels"],
+                             missing = NA);
+
+xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="xgbtree", trControl=kFoldControl);
+
+xgbtree
 
 ######
 # GLM
