@@ -4,11 +4,17 @@
 
 #libraries
 install.packages("caret")
+install.packages("klaR")
+install.packages("httpuv")
+library(httpuv)
+library(klaR)
 library(caret)
 
+install.packages("pROC")
+library(pROC) # for AUC calculations
+library(devtools)
 
-####################
-#Import data
+# Import data -------------------------------------------------------------
 
 source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
 summaryTable <- runMain();
@@ -23,12 +29,10 @@ set.seed(8850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
 
-##################################################
-# Create trainControl to be reused by all models #
 
 
+# Convert columns to numeric ----------------------------------------------
 
-#convert columns to numeric
 summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"]));
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"]));
@@ -40,9 +44,20 @@ summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryT
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
   
-# Create custom indices: myFolds
+
+# Split data for training and validating ----------------------------------
+
+totalData.size <- dim(summaryTable)[1];
+training.size <- trunc(totalData.size * 0.7);
+
+training.df <- as.data.frame(summaryTable[1:training.size-1,]);
+validation.df <- as.data.frame(summaryTable[training.size:totalData.size,]);
+
+
+
+# Create trainControl to be reused by all models --------------------------
 #Guarantees that we are going to use the exact same datasets for all models
-myFolds <- createFolds(summaryTable[,"explanatoryVariable"] , k = 10); 
+myFolds <- createFolds(training.df[,"explanatoryVariable"] , k = 10); 
 
 #larger K implies less bias (overfitting). However, larger K implies larger variance, i.e., 
 #the prediction has large variation. The reason is that larger K makes each training data large and
@@ -63,9 +78,10 @@ kFoldControl <- trainControl(
 # Generate each model #
 
 ##############
-# Naive Bayes
 
-nb<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="nb", trControl=kFoldControl);
+
+# Naive Bayes -------------------------------------------------------------
+nb<-  caret::train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", trControl=kFoldControl);
 
 nb
 
@@ -83,10 +99,7 @@ nb
 # TRUE       0.7534538  0.9270484  0.5095109
 
 
-
-######
-# KNN
-
+# KNN ---------------------------------------------------------------------
 knn <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
 
 knn
@@ -95,9 +108,8 @@ knn
 #AM.2: 7  0.8338240  0.9851064  0.0750000
 #AM.3: 5  0.8290137  0.9778947  0.1340909
 
-################
-# Random Forest
 
+# Random Forest -----------------------------------------------------------
 rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
 
 rf
@@ -106,17 +118,16 @@ rf
 #AM.2: 0.7938766  0.8638338  0.4812422
 #AM.3: 0.8124545  0.8762876  0.5132246
 
-################
-# xgBoostTree
 
+# xgBoostTree -------------------------------------------------------------
 xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
                 method="gbm", trControl=kFoldControl);
 
 
 xgbtree
-######
-# GLM
 
+
+# GLM ---------------------------------------------------------------------
 glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
 glmModel
 #Aggre. ROC        Sens       Spec     
@@ -124,6 +135,8 @@ glmModel
 #AM.2:  0.8276035  0.9338004  0.4748377
 #AM.3:  0.8747113  0.9237826  0.4507378
 
+
+# Bayes GLM ---------------------------------------------------------------
 bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
 bayesglm
 # Aggre.  ROC        Sens       Spec     
@@ -144,9 +157,8 @@ bayesglm
 #In any case, both glmnet and glm produce the exact same results for my data, therefore I favored
 #the simplest model.
 
-######
-# SVM
 
+# SVM ---------------------------------------------------------------------
 svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
 svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear2", trControl=kFoldControl);
 svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl, metric="Spec");
@@ -169,10 +181,10 @@ svmLinearWeights
 #AM.2: 1.00  2       0.8016421  0.9082113  0.6105458
 #AM.3: 0.50  3       0.8102679  0.8439114  0.5645059
 
-###################
-# Compare models 
 
-#Results of mininal
+
+# Compare models ----------------------------------------------------------
+
 
 ###################
 #Visualize models
@@ -230,6 +242,9 @@ compareTable
 predictedBugCoveringList<-compareTable[compareTable$svm=="T",];
 predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
+
+
+# Estimate n (results of mininal) ---------------------------------------------------
 
 #Computing the miminum value of n that predicted bugCovering True
 min(predictedBugCoveringList$explanatoryVariable);
