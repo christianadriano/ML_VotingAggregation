@@ -34,7 +34,7 @@ summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
 summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
-summaryTable[,"explanatoryVariable"] <- summaryTable[,"majorityVote"];
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"rankingVote"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
@@ -118,13 +118,12 @@ rf
 # xgBoostTree -------------------------------------------------------------
 xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
                 method="gbm", trControl=kFoldControl);
-
-
 xgbtree
 
 
 # GLM ---------------------------------------------------------------------
 glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
+
 glmModel
 #Aggre. ROC        Sens       Spec     
 #AM.1:
@@ -134,6 +133,7 @@ glmModel
 
 # Bayes GLM ---------------------------------------------------------------
 bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
+
 bayesglm
 # Aggre.  ROC        Sens       Spec     
 #AM.1:
@@ -192,7 +192,7 @@ bwplot(resampleList,metric="ROC")
 densityplot(resampleList,metric="ROC")
 dotplot(resampleList,xlim=range(0,1),metric="ROC")
 #Compare two best
-twoBestList <- resamples(list(svmLinearWeights=svmLinearWeights,bayesglm=bayesglm));
+twoBestList <- resamples(list(svmLinear2=svmLinear2,bayesglm=bayesglm));
 xyplot(twoBestList,xlim=range(0,1), metric="ROC")
 
 #compare second and third best
@@ -212,30 +212,30 @@ xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 
 ##################################################
 #Predict n based on best model
-compareTable <- data.frame(summaryTable$explanatoryVariable,
-                           summaryTable$bugCoveringLabels,
-                           predict(nb,summaryTable),
-                           predict(knn,summaryTable),
-                           predict(rf,summaryTable),
-                           predict(bayesglm,summaryTable),
-                           predict(svmLinearWeights,summaryTable)
+compareTable <- data.frame(validation.df$explanatoryVariable,
+                           validation.df$bugCoveringLabels,
+                           predict(nb,validation.df),
+                           predict(knn,validation.df),
+                           predict(rf,validation.df),
+                           predict(bayesglm,validation.df),
+                           predict(svmLinearWeights,validation.df)
 );
 colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf","glm","svm");
 
 ####################################################
 #Predict n based on best model
-compareTable <- data.frame(summaryTable$explanatoryVariable,
-                           summaryTable$bugCoveringLabels,
-                           predict(svmLinearWeights,summaryTable)
+compareTable <- data.frame(validation.df$explanatoryVariable,
+                           validation.df$bugCoveringLabels,
+                           predict(bayesglm,validation.df)
 );
-colnames(compareTable) <- c("explanatoryVariable","actual","svm");
+colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
 
 
 
 ####################################################
 compareTable
 
-predictedBugCoveringList<-compareTable[compareTable$svm=="T",];
+predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
 
@@ -245,6 +245,6 @@ predictedBugCoveringList
 #Computing the miminum value of n that predicted bugCovering True
 min(predictedBugCoveringList$explanatoryVariable);
 
-
+max(predictedBugCoveringList$explanatoryVariable);
 
 #rnkin
