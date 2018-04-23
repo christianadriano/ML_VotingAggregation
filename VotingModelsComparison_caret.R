@@ -29,14 +29,11 @@ set.seed(8850);
 g<- runif((nrow(summaryTable))); #generates a random distribution
 summaryTable <- summaryTable[order(g),];
 
-
-
 # Convert columns to numeric ----------------------------------------------
-
 summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
-summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"]));
-summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"]));
-summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"]));
+summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
+summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
+summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
 summaryTable[,"explanatoryVariable"] <- summaryTable[,"majorityVote"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
@@ -46,7 +43,6 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
   
 
 # Split data for training and validating ----------------------------------
-
 totalData.size <- dim(summaryTable)[1];
 training.size <- trunc(totalData.size * 0.7);
 
