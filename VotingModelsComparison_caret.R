@@ -6,11 +6,12 @@
 install.packages("caret")
 install.packages("klaR")
 install.packages("httpuv")
+install.packages("pROC")
+#-------------------------------------------------------
+
 library(httpuv)
 library(klaR)
 library(caret)
-
-install.packages("pROC")
 library(pROC) # for AUC calculations
 library(devtools)
 
