@@ -35,7 +35,7 @@ summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
 summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
-summaryTable[,"explanatoryVariable"] <- summaryTable[,"rankingVote"];
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"Yes.Count"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
@@ -219,9 +219,13 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
                            predict(knn,validation.df),
                            predict(rf,validation.df),
                            predict(bayesglm,validation.df),
-                           predict(svmLinearWeights,validation.df)
+                           predict(svmLinearWeights,validation.df),
+                           predict(svmLinear2,validation.df)
 );
-colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf","glm","svm");
+colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
+                            "bayesGLM","svmW","svm2");
+
+compareTable[compareTable$actual=="T",]
 
 ####################################################
 #Predict n based on best model
