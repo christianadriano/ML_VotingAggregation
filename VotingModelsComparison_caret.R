@@ -8,7 +8,6 @@ install.packages("klaR")
 install.packages("httpuv")
 install.packages("pROC")
 #-------------------------------------------------------
-
 library(httpuv)
 library(klaR)
 library(caret)
@@ -35,13 +34,12 @@ summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
 summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
-summaryTable[,"explanatoryVariable"] <- summaryTable[,"Yes.Count"];
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"rankingVote"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
 summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
-  
 
 # Split data for training and validating ----------------------------------
 totalData.size <- dim(summaryTable)[1];
@@ -70,6 +68,8 @@ kFoldControl <- trainControl(
   summaryFunction = twoClassSummary
 );
 
+#List of models to be later compared
+modelList <- vector("list",length=8);
 
 #######################
 # Generate each model #
@@ -104,24 +104,25 @@ knn
 #AM.1:
 #AM.2: 7  0.8338240  0.9851064  0.0750000
 #AM.3: 5  0.8290137  0.9778947  0.1340909
-
+modelList <- c(modelList,knn);
 
 # Random Forest -----------------------------------------------------------
 rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
+
 
 rf
 #Aggre.  ROC        Sens       Spec     
 #AM.1:
 #AM.2: 0.7938766  0.8638338  0.4812422
 #AM.3: 0.8124545  0.8762876  0.5132246
-
+modelList <- c(modelList,rf);
 
 # xgBoostTree -------------------------------------------------------------
 xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
                 method="gbm", trControl=kFoldControl);
 xgbtree
 
-
+modelList <- c(modelList,xgbtree);
 # GLM ---------------------------------------------------------------------
 glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
 
@@ -130,6 +131,7 @@ glmModel
 #AM.1:
 #AM.2:  0.8276035  0.9338004  0.4748377
 #AM.3:  0.8747113  0.9237826  0.4507378
+modelList <- c(modelList,glmModel);
 
 
 # Bayes GLM ---------------------------------------------------------------
@@ -140,6 +142,7 @@ bayesglm
 #AM.1:
 #AM.2: 0.8797804  0.9338004  0.4748377
 #AM.3: 0.8898239  0.9322932  0.4371014
+modelList <- c(modelList,bayesglm);
 
 
 #Not part of Caret and produced results similar to bayesglm
@@ -165,23 +168,24 @@ svmLinear
 #AM.1:
 #AM.2: 0.598301  0.9589485  0.2627181
 #AM.3: 0.6798618  0.9643897  0.2357955
+modelList <- c(modelList,svmLinear);
 
 svmLinear2
 #Aggre. cost  ROC        Sens       Spec     
 #AM.1: 
 #AM.2: 1.00  0.8009603  0.9616318  0.2776515
 #AM.3: 0.50  0.7713566  0.9757671  0.1613636
+modelList <- c(modelList,svmLinear2);
 
 svmLinearWeights
 #Aggre. cost  weight  ROC        Sens       Spec    
 #AM.1:
 #AM.2: 1.00  2       0.8016421  0.9082113  0.6105458
 #AM.3: 0.50  3       0.8102679  0.8439114  0.5645059
-
+modelList <- c(modelList,svmLinearWeights);
 
 
 # Compare models ----------------------------------------------------------
-
 
 ###################
 #Visualize models
@@ -227,6 +231,7 @@ colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
 
 compareTable[compareTable$actual=="T",]
 
+
 ####################################################
 #Predict n based on best model
 compareTable <- data.frame(validation.df$explanatoryVariable,
@@ -243,6 +248,11 @@ compareTable
 predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
+
+
+validationErrors.df <- calculateValidationErrors(modelList,validation.df);
+write.csv(validationErrors.df, file = ".//kfold-study/rf_sens_kfold_study.csv");
+
 
 
 # Estimate n (results of mininal) ---------------------------------------------------
