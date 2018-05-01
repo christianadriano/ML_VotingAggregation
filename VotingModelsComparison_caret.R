@@ -17,6 +17,8 @@ library(devtools)
 # Import data -------------------------------------------------------------
 
 source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
+source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//calculateValidationErrors.R");
+
 summaryTable <- runMain();
 #summaryTable <- data.frame(summaryTable);
 
@@ -89,11 +91,12 @@ nb
 #FALSE      0.7136796  0.9380167  0.4383509
 #TRUE       0.7241444  0.9302171  0.4439717
 
-
 #AM.3:
 # usekernel  ROC        Sens       Spec     
 # FALSE      0.7546970  0.9031409  0.5664596
 # TRUE       0.7534538  0.9270484  0.5095109
+modelList <- list();
+modelList <- list(modelList,nb);
 
 
 # KNN ---------------------------------------------------------------------
@@ -109,13 +112,13 @@ modelList <- c(modelList,knn);
 # Random Forest -----------------------------------------------------------
 rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
 
-
 rf
 #Aggre.  ROC        Sens       Spec     
 #AM.1:
 #AM.2: 0.7938766  0.8638338  0.4812422
 #AM.3: 0.8124545  0.8762876  0.5132246
-modelList <- c(modelList,rf);
+modelList <- list();
+modelList <- list(modelList);
 
 # xgBoostTree -------------------------------------------------------------
 xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
@@ -250,7 +253,7 @@ predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
 
 
-validationErrors.df <- calculateValidationErrors(modelList,validation.df);
+validationErrors.df <- calculateValidationErrors(rf,validation.df);
 write.csv(validationErrors.df, file = ".//kfold-study/rf_sens_kfold_study.csv");
 
 

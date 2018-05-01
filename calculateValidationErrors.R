@@ -4,10 +4,10 @@
 
 # Calculate errors on a provided dataset (ideally a holdout one) ----------
 
-calculateValidationErrors <- function(fitModelList,validationData){
+calculateValidationErrors <- function(fitModel,validationData){
   
   row = 0;
-  for(fitModel in fitModelList){  
+ # for(fitModel in fitModelList){  
     row <- row+1;
     bugCoveringPredicted <- predict(fitModel,newdata = validationData);
     matrixResult<- confusionMatrix(data=bugCoveringPredicted,validationData$bugCoveringLabels, positive="T");
@@ -43,7 +43,7 @@ calculateValidationErrors <- function(fitModelList,validationData){
     outcome[row,"sensitivity"]<-sensitivity;
     outcome[row,"specificity"]<-specificity;
     
-  }
+  #}
   return(outcome);
   
 }
