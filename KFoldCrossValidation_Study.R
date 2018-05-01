@@ -87,10 +87,12 @@ colnames(outcome)<- c("kfolds","trainingError","AUC","accuracy","trueNegatives",
   trueNegatives<- matrixResult$table[1,1];
   truePositives<- matrixResult$table[2,2];
   falseNegatives<- matrixResult$table[1,2];
-  falsePositives<- matrixResult$table[2,1];?
+  falsePositives<- matrixResult$table[2,1];
   
   #compute AUC
-  aucValue<- roc(response = as.numeric(summaryTable$bugCoveringLabels),predictor = as.numeric(bugCoveringPredicted)) %>% auc();
+  aucValue<- roc(response = as.numeric(summaryTable$bugCoveringLabels),
+                 predictor = as.numeric(bugCoveringPredicted)) %>% auc();
+  
   aucValue<-as.numeric(aucValue);
   
   accuracy <- (truePositives + trueNegatives) / (truePositives + trueNegatives + falsePositives + falseNegatives);
