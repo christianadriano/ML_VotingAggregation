@@ -5,6 +5,12 @@
 # Calculate errors on a provided dataset (ideally a holdout one) ----------
 
 calculateValidationErrors <- function(fitModel,validationData){
+ # browser()
+#  fitModel <- fitModelList[1];
+  ## Table to store the outcomes from the training and model selection and prediction
+  outcome <- matrix(ncol = 12, nrow = 40);
+  colnames(outcome)<- c("AUC","accuracy","trueNegatives","truePositives",
+                        "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
   
   row = 0;
  # for(fitModel in fitModelList){  
@@ -30,8 +36,6 @@ calculateValidationErrors <- function(fitModel,validationData){
     sensitivity <- truePositives / (truePositives + falseNegatives);
     
     #create output table
-    outcome[row,"kfolds"]<-folds;
-    outcome[row,"trainingError"]<-trainingError;
     outcome[row,"AUC"] <- aucValue;
     outcome[row,"accuracy"]<-accuracy;
     outcome[row,"trueNegatives"]<-trueNegatives;
