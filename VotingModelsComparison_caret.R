@@ -19,6 +19,12 @@ library(devtools)
 source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateAnswerOptionsPerQuestion.R");
 source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//calculateValidationErrors.R");
 
+#HOw people are crowdsourcing? How people are fixing bugs?
+#No continuous interation (iteration?)
+#Complementary capacities
+#validate assumptions
+#allow others to extend the worflow?
+
 summaryTable <- runMain();
 #summaryTable <- data.frame(summaryTable);
 
@@ -80,9 +86,10 @@ modelList <- vector("list",length=8);
 
 
 # Naive Bayes -------------------------------------------------------------
-nb<-  caret::train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", trControl=kFoldControl);
+nb<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", trControl=kFoldControl);
 
 nb
+
 
 #AM.1
 
@@ -95,8 +102,11 @@ nb
 # usekernel  ROC        Sens       Spec     
 # FALSE      0.7546970  0.9031409  0.5664596
 # TRUE       0.7534538  0.9270484  0.5095109
-modelList <- list();
-modelList <- list(modelList,nb);
+modelList <- list(nb);
+#modelList <- list(modelList,nb);
+modelList[1];
+bugCoveringPredicted <- predict(nb, validation.df);
+outcome <- calculateValidationErrors(nb,validation.df);
 
 
 # KNN ---------------------------------------------------------------------
@@ -119,6 +129,7 @@ rf
 #AM.3: 0.8124545  0.8762876  0.5132246
 modelList <- list();
 modelList <- list(modelList);
+
 
 # xgBoostTree -------------------------------------------------------------
 xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
@@ -252,8 +263,14 @@ predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable
 predictedBugCoveringList
 
+modelList <- list(nb.train)
+sapply(modelList,class)
 
-validationErrors.df <- calculateValidationErrors(rf,validation.df);
+str(modelList, max.level=1)
+
+class(modelList[[1]])
+
+validationErrors.df <- calculateValidationErrors(modelList,validation.df);
 write.csv(validationErrors.df, file = ".//kfold-study/rf_sens_kfold_study.csv");
 
 
