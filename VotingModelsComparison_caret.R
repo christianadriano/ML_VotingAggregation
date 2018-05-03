@@ -75,9 +75,7 @@ kFoldControl <- trainControl(
   savePredictions = TRUE, #
   summaryFunction = twoClassSummary
 );
-
-#List of models to be later compared
-modelList <- vector("list",length=8);
+ 
 
 #######################
 # Generate each model #
@@ -102,11 +100,6 @@ nb
 # usekernel  ROC        Sens       Spec     
 # FALSE      0.7546970  0.9031409  0.5664596
 # TRUE       0.7534538  0.9270484  0.5095109
-modelList <- list(nb);
-#modelList <- list(modelList,nb);
-modelList[1];
-bugCoveringPredicted <- predict(nb, validation.df);
-outcome <- calculateValidationErrors(nb,validation.df);
 
 
 # KNN ---------------------------------------------------------------------
@@ -117,7 +110,6 @@ knn
 #AM.1:
 #AM.2: 7  0.8338240  0.9851064  0.0750000
 #AM.3: 5  0.8290137  0.9778947  0.1340909
-modelList <- c(modelList,knn);
 
 # Random Forest -----------------------------------------------------------
 rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
@@ -127,8 +119,7 @@ rf
 #AM.1:
 #AM.2: 0.7938766  0.8638338  0.4812422
 #AM.3: 0.8124545  0.8762876  0.5132246
-modelList <- list();
-modelList <- list(modelList);
+
 
 
 # xgBoostTree -------------------------------------------------------------
@@ -136,7 +127,6 @@ xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
                 method="gbm", trControl=kFoldControl);
 xgbtree
 
-modelList <- c(modelList,xgbtree);
 # GLM ---------------------------------------------------------------------
 glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
 
@@ -145,7 +135,6 @@ glmModel
 #AM.1:
 #AM.2:  0.8276035  0.9338004  0.4748377
 #AM.3:  0.8747113  0.9237826  0.4507378
-modelList <- c(modelList,glmModel);
 
 
 # Bayes GLM ---------------------------------------------------------------
@@ -156,7 +145,6 @@ bayesglm
 #AM.1:
 #AM.2: 0.8797804  0.9338004  0.4748377
 #AM.3: 0.8898239  0.9322932  0.4371014
-modelList <- c(modelList,bayesglm);
 
 
 #Not part of Caret and produced results similar to bayesglm
@@ -182,24 +170,22 @@ svmLinear
 #AM.1:
 #AM.2: 0.598301  0.9589485  0.2627181
 #AM.3: 0.6798618  0.9643897  0.2357955
-modelList <- c(modelList,svmLinear);
 
 svmLinear2
 #Aggre. cost  ROC        Sens       Spec     
 #AM.1: 
 #AM.2: 1.00  0.8009603  0.9616318  0.2776515
 #AM.3: 0.50  0.7713566  0.9757671  0.1613636
-modelList <- c(modelList,svmLinear2);
 
 svmLinearWeights
 #Aggre. cost  weight  ROC        Sens       Spec    
 #AM.1:
 #AM.2: 1.00  2       0.8016421  0.9082113  0.6105458
 #AM.3: 0.50  3       0.8102679  0.8439114  0.5645059
-modelList <- c(modelList,svmLinearWeights);
 
 
 # Compare models ----------------------------------------------------------
+
 
 ###################
 #Visualize models
@@ -255,9 +241,8 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
 
 
-
-####################################################
 compareTable
+####################################################
 
 predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable
@@ -270,10 +255,25 @@ str(modelList, max.level=1)
 
 class(modelList[[1]])
 
-validationErrors.df <- calculateValidationErrors(modelList,validation.df);
-write.csv(validationErrors.df, file = ".//kfold-study/rf_sens_kfold_study.csv");
 
+# Validate models ---------------------------------------------------------
 
+#Results from model prediction on a validation set (holdout set)
+validationOutcomes <- matrix(ncol = 11, nrow = 0);
+colnames(validationOutcomes)<- c("ModelName","AUC","accuracy","trueNegatives","truePositives",
+                      "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
+
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(nb,"NaiveBayes",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(knn,"KNearestNeighbor",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(rf,"RandomForest",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(glm,"Generalized Linear Model",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(bayesglm,"Generalized Linear Model Bayes",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(xgbtree,"XBoostTree",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinear,"SVM Linear",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinear2,"SVM Linear 2",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinearWeights,"SVM Weights",validation.df));
+
+write.csv(validationOutcomes, file = ".//validationErrors.csv");
 
 # Estimate n (results of mininal) ---------------------------------------------------
 
