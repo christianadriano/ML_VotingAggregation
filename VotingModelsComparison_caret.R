@@ -26,7 +26,6 @@ source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//calculateVali
 #allow others to extend the worflow?
 
 summaryTable <- runMain();
-#summaryTable <- data.frame(summaryTable);
 
 #I need to guarantee that some examples (i.e., failing methods)
 #do not dominate the training or testing sets. To do that, I need to get a 
@@ -57,7 +56,6 @@ training.df <- as.data.frame(summaryTable[1:training.size-1,]);
 validation.df <- as.data.frame(summaryTable[training.size:totalData.size,]);
 
 
-
 # Create trainControl to be reused by all models --------------------------
 #Guarantees that we are going to use the exact same datasets for all models
 myFolds <- createFolds(training.df[,"explanatoryVariable"] , k = 10); 
@@ -73,7 +71,8 @@ kFoldControl <- trainControl(
   classProbs = TRUE, # IMPORTANT!
   verboseIter = TRUE, #
   savePredictions = TRUE, #
-  summaryFunction = twoClassSummary
+  summaryFunction = twoClassSummary,
+  metric = "Sensitivity"
 );
  
 
@@ -136,7 +135,6 @@ glmModel
 #AM.2:  0.8276035  0.9338004  0.4748377
 #AM.3:  0.8747113  0.9237826  0.4507378
 
-
 # Bayes GLM ---------------------------------------------------------------
 bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
 
@@ -158,7 +156,6 @@ bayesglm
 #The trade-off is that glmnet accepts more bias in the data (more risk of overfitting)
 #In any case, both glmnet and glm produce the exact same results for my data, therefore I favored
 #the simplest model.
-
 
 # SVM ---------------------------------------------------------------------
 svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
@@ -213,8 +210,6 @@ xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 #Best model for Majority voting (AM.2)
 #svmLinearWeights is tied with bayesglm
 
-
-
 ##################################################
 #Predict n based on best model
 compareTable <- data.frame(validation.df$explanatoryVariable,
@@ -223,40 +218,38 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
                            predict(knn,validation.df),
                            predict(rf,validation.df),
                            predict(bayesglm,validation.df),
-                           predict(svmLinearWeights,validation.df),
-                           predict(svmLinear2,validation.df)
+                           predict(svmLinear,validation.df),
+                           predict(svmLinear2,validation.df),
+                           predict(svmLinearWeights,validation.df)
 );
+
 colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
-                            "bayesGLM","svmW","svm2");
+                            "bayesGLM","svmLinear","svmLinear2","svmWeights");
 
-compareTable[compareTable$actual=="T",]
-
+compareTable[compareTable$actual=="T",];
 
 ####################################################
 #Predict n based on best model
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(bayesglm,validation.df)
-);
+                           predict(svmLinearWeights,validation.df));
+
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
 
-
 compareTable
-####################################################
 
 predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
-predictedBugCoveringList$explanatoryVariable
-predictedBugCoveringList
+predictedBugCoveringList$explanatoryVariable;
+predictedBugCoveringList;
 
-modelList <- list(nb.train)
-sapply(modelList,class)
+# Estimate n (results of mininal) ---------------------------------------------------
 
-str(modelList, max.level=1)
+#Computing the miminum value of n that predicted bugCovering True
+min(predictedBugCoveringList$explanatoryVariable);
 
-class(modelList[[1]])
+max(predictedBugCoveringList$explanatoryVariable);
 
-
-# Validate models ---------------------------------------------------------
+# Validate models -------------------------------------------------------------------
 
 #Results from model prediction on a validation set (holdout set)
 validationOutcomes <- matrix(ncol = 11, nrow = 0);
@@ -266,7 +259,7 @@ colnames(validationOutcomes)<- c("ModelName","AUC","accuracy","trueNegatives","t
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(nb,"NaiveBayes",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(knn,"KNearestNeighbor",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(rf,"RandomForest",validation.df));
-validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(glm,"Generalized Linear Model",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(glmModel,"Generalized Linear Model",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(bayesglm,"Generalized Linear Model Bayes",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(xgbtree,"XBoostTree",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinear,"SVM Linear",validation.df));
@@ -275,11 +268,3 @@ validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLin
 
 write.csv(validationOutcomes, file = ".//validationErrors.csv");
 
-# Estimate n (results of mininal) ---------------------------------------------------
-
-#Computing the miminum value of n that predicted bugCovering True
-min(predictedBugCoveringList$explanatoryVariable);
-
-max(predictedBugCoveringList$explanatoryVariable);
-
-#rnkin
