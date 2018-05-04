@@ -50,7 +50,7 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
 # Split data for training and validating ----------------------------------
 totalData.size <- dim(summaryTable)[1];
-training.size <- trunc(totalData.size * 0.7);
+training.size <- trunc(totalData.size * 0.70);
 
 training.df <- as.data.frame(summaryTable[1:training.size-1,]);
 validation.df <- as.data.frame(summaryTable[training.size:totalData.size,]);
@@ -71,8 +71,7 @@ kFoldControl <- trainControl(
   classProbs = TRUE, # IMPORTANT!
   verboseIter = TRUE, #
   savePredictions = TRUE, #
-  summaryFunction = twoClassSummary,
-  metric = "Sensitivity"
+  summaryFunction = twoClassSummary
 );
  
 
@@ -83,9 +82,12 @@ kFoldControl <- trainControl(
 
 
 # Naive Bayes -------------------------------------------------------------
-nb<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", trControl=kFoldControl);
+nb_sens<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", metric="Sens", trControl=kFoldControl);
 
-nb
+nb_auc<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", metric="AUC", trControl=kFoldControl);
+
+nb_sens
+nb_auc
 
 
 #AM.1
@@ -102,18 +104,25 @@ nb
 
 
 # KNN ---------------------------------------------------------------------
-knn <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", trControl=kFoldControl);
+knn_sens <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", metric="Sens", trControl=kFoldControl);
 
-knn
+knn_auc <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", metric="Sens", trControl=kFoldControl);
+
+knn_sens
+knn_auc
 #Aggre. k  ROC        Sens       Spec
 #AM.1:
 #AM.2: 7  0.8338240  0.9851064  0.0750000
 #AM.3: 5  0.8290137  0.9778947  0.1340909
 
 # Random Forest -----------------------------------------------------------
-rf<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
+rf_sens<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", metric="Sens", trControl=kFoldControl);
 
-rf
+rf_auc<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
+
+rf_sens
+
+rf_auc
 #Aggre.  ROC        Sens       Spec     
 #AM.1:
 #AM.2: 0.7938766  0.8638338  0.4812422
@@ -229,10 +238,10 @@ colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
 compareTable[compareTable$actual=="T",];
 
 ####################################################
-#Predict n based on best model
+#Predict n based on best model (highest precision)
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(svmLinearWeights,validation.df));
+                           predict(nb,validation.df));
 
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
 
