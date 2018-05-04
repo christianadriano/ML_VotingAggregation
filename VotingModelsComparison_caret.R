@@ -60,7 +60,7 @@ summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
 summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
-summaryTable[,"explanatoryVariable"] <- summaryTable[,"rankingVote"];
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"Yes.Count"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");
@@ -227,22 +227,24 @@ resampleList<-resamples(list(svmLinear=svmLinear,svmLinear2=svmLinear2,svmLinear
                            glm=glmModel,bayesglm=bayesglm, rf=rf, knn=knn, nb=nb
                              ));
 
-bwplot(resampleList,metric="ROC")
+bwplot(resampleList,metric="Sens")
 densityplot(resampleList,metric="ROC")
-dotplot(resampleList,xlim=range(0,1),metric="ROC")
+dotplot(resampleList,xlim=range(0,1),metric="Sens")
 #Compare two best
 twoBestList <- resamples(list(svmLinear2=svmLinear2,bayesglm=bayesglm));
 xyplot(twoBestList,xlim=range(0,1), metric="ROC")
 
 #compare second and third best
-secodThirdBestList <- resamples(list(knn=knn,bayesglm=bayesglm));
+secodThirdBestList <- resamples(list(knn=knn,bayesglm=nb));
 xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 
 ########################################
 #Model selection results
 #Best model for ranking (AM.3)
+#knn
 
 #Best model for Threshold (AM.1)
+
 
 #Best model for Majority voting (AM.2)
 #svmLinearWeights is tied with bayesglm
@@ -251,7 +253,6 @@ xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 #Predict n based on best model
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(gbm,validation.df),
                            predict(nb,validation.df),
                            predict(knn,validation.df),
                            predict(rf,validation.df),
@@ -261,7 +262,7 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
                            predict(svmLinearWeights,validation.df)
 );
 
-colnames(compareTable) <- c("explanatoryVariable","actual","gbm","nb","knn","rf",
+colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
                             "bayesGLM","svmLinear","svmLinear2","svmWeights");
 
 compareTable[compareTable$actual=="T",];
@@ -270,12 +271,9 @@ compareTable[compareTable$actual=="T",];
 #Predict n based on best model (highest precision)
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(gbm,validation.df));
-
+                           predict(svmLinearWeights,validation.df));
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
-
 compareTable
-
 predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable;
 predictedBugCoveringList;
