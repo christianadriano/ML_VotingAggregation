@@ -1,6 +1,25 @@
+
 #Model comparisons using CARET package
-#Which model provides the best predictions?
-#NaiveBayes,KNN, RandomForest, SVN, GLM, or xgboostTree
+#Which model provides the most accurate prediction of bugcovering question
+#Feature: majorityVote or rankingVote or threshold vote
+#Naive Bayes,KNN, RandomForest, SVM, GLM, GLM Bayes
+
+#Algorithm
+#1- Train the models with 70% of the dataset and validate with 30% holdout set. Other splits (80/20, 90/10) did not produce better results.
+#2- Select models within same method using ROC. Other metrics (Kappa and Accuracy) did not produce better results.
+#3- Select models across methods using Sensitivy (recall). I chose recall instead of Specificity or ROC because our goal is to minimize false negatives (i.e., locate all faults)
+#4- Estimate the threshold for the aggregation metrics using validation set
+#4.1 Predict the if each question is bugcovering or not (use the holdout set of 30%)
+#4.2 Among all question predicted as bugcovering take the maximum value of the metric
+#Threshold(AM.1) = min(majorityVote(predictedBugCoveringQuestions))
+#Threshold(AM.2) = min(thresholdVote(predictedBugCoveringQuestions))
+#Threshold(AM.3) = max(rankingVote(predictedBugCoveringQuestions))
+
+#This guarantees that we will prioritize the detection of true bug-covering question at the expense of
+#generating false postives.
+
+
+# Code --------------------------------------------------------------------
 
 #libraries
 install.packages("caret")
@@ -82,12 +101,12 @@ kFoldControl <- trainControl(
 
 
 # Naive Bayes -------------------------------------------------------------
-nb_sens<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", metric="Sens", trControl=kFoldControl);
+nb<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", metric="ROC", trControl=kFoldControl);
 
-nb_auc<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", metric="AUC", trControl=kFoldControl);
+#nb_auc<-  train(bugCoveringLabels ~ explanatoryVariable,training.df, method="nb", trControl=kFoldControl,  maximize = TRUE);
 
-nb_sens
-nb_auc
+nb
+#nb_auc
 
 
 #AM.1
@@ -104,25 +123,26 @@ nb_auc
 
 
 # KNN ---------------------------------------------------------------------
-knn_sens <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", metric="Sens", trControl=kFoldControl);
+knn <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="knn", metric="ROC", trControl=kFoldControl);
 
-knn_auc <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="knn", metric="Sens", trControl=kFoldControl);
+#knn_auc <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="knn", metric="Kappa", trControl=kFoldControl);
 
-knn_sens
-knn_auc
+#knn_sens
+knn
 #Aggre. k  ROC        Sens       Spec
 #AM.1:
 #AM.2: 7  0.8338240  0.9851064  0.0750000
 #AM.3: 5  0.8290137  0.9778947  0.1340909
 
 # Random Forest -----------------------------------------------------------
-rf_sens<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", metric="Sens", trControl=kFoldControl);
+rf <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="rf", metric="ROC", trControl=kFoldControl);
 
-rf_auc<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="rf", trControl=kFoldControl);
-
-rf_sens
-
-rf_auc
+# rf_Accuracy<- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="rf", metric="Accuracy", trControl=kFoldControl);
+# rf_KAPPA<- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="rf", metric="Kappa", trControl=kFoldControl);
+# rf_Accuracy
+# rf_ROC
+# rf_KAPPA
+rf
 #Aggre.  ROC        Sens       Spec     
 #AM.1:
 #AM.2: 0.7938766  0.8638338  0.4812422
@@ -130,13 +150,21 @@ rf_auc
 
 
 
-# xgBoostTree -------------------------------------------------------------
-xgbtree <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable,
-                method="gbm", trControl=kFoldControl);
-xgbtree
+# GBM Gradient Boosting Trees  -------------------------------------------------------------
+#Cannot use GBM or xgBoostTree because I have only one feature
+
+# gbm <- train(bugCoveringLabels ~ explanatoryVariable,training.df,
+#                 method="gbm", metric="ROC", trControl=kFoldControl);
+# 
+# #gbm_Accuracy <- train(bugCoveringLabels ~ explanatoryVariable,training.df,
+#  #                method="gbm", metric="Accuracy", trControl=kFoldControl);
+# 
+# gbm
+# 
+# #gbm_Accuracy
 
 # GLM ---------------------------------------------------------------------
-glmModel<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="glm", trControl=kFoldControl)
+glmModel<- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="glm", metric="ROC",trControl=kFoldControl)
 
 glmModel
 #Aggre. ROC        Sens       Spec     
@@ -145,7 +173,7 @@ glmModel
 #AM.3:  0.8747113  0.9237826  0.4507378
 
 # Bayes GLM ---------------------------------------------------------------
-bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="bayesglm", trControl=kFoldControl);
+bayesglm<- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="bayesglm", metric="ROC", trControl=kFoldControl);
 
 bayesglm
 # Aggre.  ROC        Sens       Spec     
@@ -167,9 +195,9 @@ bayesglm
 #the simplest model.
 
 # SVM ---------------------------------------------------------------------
-svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear", trControl=kFoldControl);
-svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinear2", trControl=kFoldControl);
-svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,summaryTable, method="svmLinearWeights", trControl=kFoldControl, metric="Spec");
+svmLinear <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="svmLinear", metric="ROC", trControl=kFoldControl);
+svmLinear2 <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="svmLinear2", metric="ROC",trControl=kFoldControl);
+svmLinearWeights <- train(bugCoveringLabels ~ explanatoryVariable,training.df, method="svmLinearWeights", metric="ROC",trControl=kFoldControl);
 
 svmLinear
 #Aggre.    ROC        Sens       Spec     
@@ -223,6 +251,7 @@ xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 #Predict n based on best model
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
+                           predict(gbm,validation.df),
                            predict(nb,validation.df),
                            predict(knn,validation.df),
                            predict(rf,validation.df),
@@ -232,7 +261,7 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
                            predict(svmLinearWeights,validation.df)
 );
 
-colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
+colnames(compareTable) <- c("explanatoryVariable","actual","gbm","nb","knn","rf",
                             "bayesGLM","svmLinear","svmLinear2","svmWeights");
 
 compareTable[compareTable$actual=="T",];
@@ -241,7 +270,7 @@ compareTable[compareTable$actual=="T",];
 #Predict n based on best model (highest precision)
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(nb,validation.df));
+                           predict(gbm,validation.df));
 
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
 
@@ -265,12 +294,11 @@ validationOutcomes <- matrix(ncol = 11, nrow = 0);
 colnames(validationOutcomes)<- c("ModelName","AUC","accuracy","trueNegatives","truePositives",
                       "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
 
-validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(nb,"NaiveBayes",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(fitModel=nb,"NaiveBayes",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(knn,"KNearestNeighbor",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(rf,"RandomForest",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(glmModel,"Generalized Linear Model",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(bayesglm,"Generalized Linear Model Bayes",validation.df));
-validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(xgbtree,"XBoostTree",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinear,"SVM Linear",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinear2,"SVM Linear 2",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(svmLinearWeights,"SVM Weights",validation.df));
