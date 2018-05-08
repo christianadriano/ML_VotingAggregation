@@ -69,7 +69,7 @@ summaryTable$bugCoveringLabels<- as.factor(summaryTable$bugCoveringLabels);
 
 # Split data for training and validating ----------------------------------
 totalData.size <- dim(summaryTable)[1];
-training.size <- trunc(totalData.size * 0.70);
+training.size <- trunc(totalData.size * 0.7);
 
 training.df <- as.data.frame(summaryTable[1:training.size-1,]);
 validation.df <- as.data.frame(summaryTable[training.size:totalData.size,]);
@@ -251,7 +251,8 @@ xyplot(secodThirdBestList,xlim=range(0,1), metric="ROC")
 
 ##################################################
 #Predict n based on best model
-compareTable <- data.frame(validation.df$explanatoryVariable,
+compareTable <- data.frame(validation.df$Question.ID,
+                           validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
                            predict(nb,validation.df),
                            predict(knn,validation.df),
@@ -262,7 +263,7 @@ compareTable <- data.frame(validation.df$explanatoryVariable,
                            predict(svmLinearWeights,validation.df)
 );
 
-colnames(compareTable) <- c("explanatoryVariable","actual","nb","knn","rf",
+colnames(compareTable) <- c("Question.ID","explanatoryVariable","actual","nb","knn","rf",
                             "bayesGLM","svmLinear","svmLinear2","svmWeights");
 
 compareTable[compareTable$actual=="T",];
@@ -271,9 +272,9 @@ compareTable[compareTable$actual=="T",];
 #Predict n based on best model (highest precision)
 compareTable <- data.frame(validation.df$explanatoryVariable,
                            validation.df$bugCoveringLabels,
-                           predict(svmLinearWeights,validation.df));
+                           predict(nb,validation.df));
 colnames(compareTable) <- c("explanatoryVariable","actual","predicted");
-compareTable
+compareTable[compareTable$actual=="T",]
 predictedBugCoveringList<-compareTable[compareTable$predicted=="T",];
 predictedBugCoveringList$explanatoryVariable;
 predictedBugCoveringList;
@@ -292,7 +293,7 @@ validationOutcomes <- matrix(ncol = 11, nrow = 0);
 colnames(validationOutcomes)<- c("ModelName","AUC","accuracy","trueNegatives","truePositives",
                       "falseNegatives","falsePositives","precision","recall","specificity","sensitivity");
 
-validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(fitModel=nb,"NaiveBayes",validation.df));
+validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(nb,"NaiveBayes",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(knn,"KNearestNeighbor",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(rf,"RandomForest",validation.df));
 validationOutcomes <- rbind(validationOutcomes, calculateValidationErrors(glmModel,"Generalized Linear Model",validation.df));
