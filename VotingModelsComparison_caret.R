@@ -1,8 +1,9 @@
 
-#Model comparisons using CARET package
-#Which model provides the most accurate prediction of bugcovering question
-#Feature: majorityVote or rankingVote or threshold vote
-#Naive Bayes,KNN, RandomForest, SVM, GLM, GLM Bayes
+#Model generation and selection using CARET package
+
+#Which models provide the most accurate predictions of bugcovering question?
+#Features: majorityVote or rankingVote or threshold vote
+#Methods: Naive Bayes, KNN, RandomForest, SVM, GLM, and GLM Bayes
 
 #Algorithm
 #1- Train the models with 70% of the dataset and validate with 30% holdout set. Other splits (80/20, 90/10) did not produce better results.
