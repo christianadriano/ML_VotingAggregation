@@ -90,10 +90,12 @@ runMain<-function(){
   
   summaryTable <- countAnswerOptions(dataf);
   summaryTable <- appendGroundTruth(summaryTable,questionList);
-  summaryTable<- setJavaMethodID(summaryTable);
-  summaryTable <- computeMajorityVote(summaryTable);
-  summaryTable <- computeThresholdVote(summaryTable,6);
-  summaryTable<- computeRanking(summaryTable);
+  summaryTable <- setJavaMethodID(summaryTable);
+  
+  summaryTable <- scoreMajorityVote(summaryTable);
+  summaryTable <- scorePositiveByNegativeVote(summaryTable)
+  summaryTable <- scoreThresholdVote(summaryTable,6);
+  summaryTable <- scoreRanking(summaryTable);
   
   return (summaryTable);
 }
@@ -108,11 +110,12 @@ runFromSample<-function(sampledDF){
   
   summaryTable <- countAnswerOptions(sampledDF);
   summaryTable <- appendGroundTruth(summaryTable,questionList);
-  summaryTable<- setJavaMethodID(summaryTable);
-  summaryTable <- computeMajorityVote(summaryTable);
-  summaryTable <- computeThresholdVote(summaryTable,6);
-  summaryTable<- computeRanking(summaryTable);
-  #summaryTable<- computePredicedbyRanking(summaryTable);
+  summaryTable <- setJavaMethodID(summaryTable);
+  summaryTable <- scoreMajorityVote(summaryTable);
+  summaryTable <- scorePositiveByNegativeVote(summaryTable)
+  summaryTable <- scoreThresholdVote(summaryTable,6);
+  summaryTable <- scoreRanking(summaryTable);
+  #summaryTable<- scorePredicedbyRanking(summaryTable);
   
   return (summaryTable);
 }

@@ -58,10 +58,11 @@ summaryTable <- summaryTable[order(g),];
 
 # Convert columns to numeric ----------------------------------------------
 summaryTable<- data.frame(summaryTable, stringsAsFactors = FALSE)
+summaryTable[,"positiveByNegativeVote"] <- as.numeric(unlist(summaryTable[,"positiveByNegativeVote"])); #AM.1.2
 summaryTable[,"rankingVote"] <- as.numeric(unlist(summaryTable[,"rankingVote"])); #AM.3
 summaryTable[,"Yes.Count"] <- as.numeric(unlist(summaryTable[,"Yes.Count"])); #AM.2
 summaryTable[,"majorityVote"] <- as.numeric(unlist(summaryTable[,"majorityVote"])); #AM.1
-summaryTable[,"explanatoryVariable"] <- summaryTable[,"Yes.Count"];
+summaryTable[,"explanatoryVariable"] <- summaryTable[,"positiveByNegativeVote"];
 summaryTable$bugCoveringLabels <- as.character(summaryTable$bugCovering);
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="FALSE", "F");
 summaryTable$bugCoveringLabels<- replace(summaryTable$bugCoveringLabels,summaryTable$bugCoveringLabels=="TRUE", "T");

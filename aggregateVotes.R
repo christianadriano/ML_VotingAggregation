@@ -1,22 +1,27 @@
-#compute all voting aggregations
+#score all voting aggregations
 #RankingVote: ranks questions based on number of YES
 #MajorityVote: balance between number of YES and NO
 #ThresholdVote: above a certain number of YES
 
 
-computeMajorityVote<- function(summaryTable){
+scoreMajorityVote<- function(summaryTable){
   summaryTable["majorityVote"] <- summaryTable$Yes.Count - summaryTable$No.Count;
   return(summaryTable);
 }
 
-computeThresholdVote<- function(summaryTable, threshold){
+scorePositiveByNegativeVote<- function(summaryTable){
+  summaryTable["positiveByNegativeVote"] <- summaryTable$Yes.Count/summaryTable$No.Count;
+  return(summaryTable);
+}
+
+scoreThresholdVote<- function(summaryTable, threshold){
   summaryTable["thresholdVote"] <- summaryTable[,"Yes.Count"]>threshold;
   return(summaryTable);
 }
 
 #Provides the list of questions that have to be considered 
 #and the list of questions that covers bugs
-computeRanking <- function(summaryTable){
+scoreRanking <- function(summaryTable){
   
   for(i in 1:8){
     selection <- summaryTable[summaryTable$JavaMethod==i,];
