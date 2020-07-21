@@ -33,5 +33,9 @@ loadAnswers<- function(fileName){
   #Remove inputs for which age-YoE<5 
   #dataf <- removeLinesColDiffSmallerThanValue(dataf,7,5,10)
   #summary (dataf);
+  
+  #create column with 1 for YES and 0 for NO or IDK
+  dataf$Answer.reward[dataf$Answer.option=="YES"] <- 1
+  dataf$Answer.reward[dataf$Answer.option!="YES"] <- 0
   return(dataf);
 }
