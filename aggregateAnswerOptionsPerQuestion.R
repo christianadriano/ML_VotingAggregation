@@ -103,7 +103,7 @@ runMain<-function(){
 
 runFromSample<-function(sampledDF){
   # Load vote aggregation methods
-  source("C://Users//Chris//Documents//GitHub//ML_VotingAggregation//aggregateVotes.R");
+  source("C://Users//Christian//Documents//GitHub//ML_VotingAggregation//aggregateVotes.R");
   
   # Initialize Java method questions and bug covering data
   questionList <- c(1,4,10,14,20,23,30,32,55,56,57,58,59,72,73,77,84,92,95,97,102,104,115,119,123);
