@@ -53,4 +53,37 @@ rankQuestions <- function(selection, labels){
   return(selection);
 }
 
+#######################################
+#Select top questions within each JavaMethod
+selectTopQuestionsByJavaMethod <- function (utility_Table,
+                                            sampled_dataf,
+                                            questionsToSelect){
+  topQuestions <- list();
+  javaMethodList<- unique(sampled_dataf$FailingMethod);
+  
+  for(javaMethod in javaMethodList){
+    javaMethod_df <- sampled_dataf[sampled_dataf$FailingMethod==javaMethod,];
+    questionList <- unique(javaMethod_df$Question.ID);
+    
+    utilitySelection <- utility_Table[questionList,];
+    
+    utilityValues <- unique(utilitySelection$utility);
+    sizeL<-length(utilityValues);
+    if(sizeL>=questionsToSelect){
+      #take only the top values
+      index <- questionsToSelect;    
+    }
+    else{
+      index <- length(utilityValues); #fewer questions than the questionsToSelect step
+    }
+    
+    utilityValues<-utilityValues[order(utilityValues,decreasing = TRUE)];
+    utilityValues <- utilityValues[1:index]; 
+    
+    #take the top questions by utility and sample another set answers from them
+    topQuestions <- rbind(topQuestions, 
+                          data.frame(utilitySelection[utilitySelection$utility>=min(utilityValues),]));
+  }
+  return(topQuestions);
+}
 
